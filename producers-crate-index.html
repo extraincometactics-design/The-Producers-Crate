@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Producer's Crate — Modulo Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════
+   The Producer's Crate — Modulo Studio
+   ═══════════════════════════════════════════════════════════ */
+:root {
+  --bg:         #0a0a0a;
+  --bg2:        #111111;
+  --bg3:        #1a1a1a;
+  --border:     #2a2a2a;
+  --gold:       #c9a84c;
+  --gold2:      #e8c96a;
+  --gold-dim:   #7a6530;
+  --text:       #f2f0ea;
+  --text-dim:   #b8b2a6;
+  --text-muted: #928a7e;
+  --green:      #4caf6e;
+  --red:        #cf4c4c;
+  --blue:       #4c8bcf;
+  --orange:     #cf844c;
+  --purple:     #8b6bd4;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── HERO ── */
+.hero {
+  position: relative;
+  padding: 64px 24px 56px;
+  text-align: center;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(201,168,76,0.07) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 20% 100%, rgba(139,107,212,0.05) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 80% 100%, rgba(76,139,207,0.05) 0%, transparent 60%);
+  pointer-events: none;
+}
+.hero-eyebrow {
+  font-size: 10px;
+  color: var(--gold-dim);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.hero-title {
+  font-family: 'Bebas Neue', cursive;
+  font-size: clamp(52px, 10vw, 88px);
+  color: var(--gold);
+  letter-spacing: 5px;
+  line-height: 0.95;
+  margin-bottom: 6px;
+}
+.hero-title span { color: var(--gold2); }
+.hero-tagline {
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+}
+.hero-desc {
+  max-width: 560px;
+  margin: 0 auto 36px;
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.8;
+}
+.hero-badges {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.hero-badge {
+  font-size: 10px;
+  padding: 3px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+.hero-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold-dim), transparent);
+  opacity: 0.4;
+  margin: 0 24px;
+}
+
+/* ── MAIN ── */
+.main {
+  padding: 48px 24px 80px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ── SECTION HEADER ── */
+.section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.section-title {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 13px;
+  color: var(--gold-dim);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+.section-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── APP GRID ── */
+.app-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+  margin-bottom: 56px;
+}
+
+/* ── APP CARD ── */
+.app-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+}
+.app-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.app-card:hover { border-color: var(--gold-dim); box-shadow: 0 0 20px rgba(201,168,76,0.06); }
+.app-card:hover::before { opacity: 1; }
+.app-card:focus-within { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(201,168,76,0.18); }
+
+/* Accent colors per card */
+.card-gold::before   { background: linear-gradient(to right, var(--gold-dim), var(--gold)); }
+.card-purple::before { background: linear-gradient(to right, rgba(139,107,212,0.4), rgba(139,107,212,0.9)); }
+.card-blue::before   { background: linear-gradient(to right, rgba(76,139,207,0.4), rgba(76,139,207,0.9)); }
+.card-green::before  { background: linear-gradient(to right, rgba(76,175,110,0.4), rgba(76,175,110,0.9)); }
+.card-red::before    { background: linear-gradient(to right, rgba(207,76,76,0.4), rgba(207,76,76,0.9)); }
+
+.card-icon {
+  font-size: 26px;
+  margin-bottom: 14px;
+  display: block;
+}
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.card-name {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 22px;
+  letter-spacing: 1.5px;
+  line-height: 1;
+}
+.card-gold   .card-name { color: var(--gold); }
+.card-purple .card-name { color: var(--purple); }
+.card-blue   .card-name { color: var(--blue); }
+.card-green  .card-name { color: var(--green); }
+.card-red    .card-name { color: #e07070; }
+
+.card-version {
+  font-size: 9px;
+  color: var(--text-muted);
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 2px 6px;
+  border-radius: 2px;
+  white-space: nowrap;
+  align-self: flex-start;
+  margin-top: 2px;
+}
+.card-tagline {
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.card-desc {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.75;
+  flex: 1;
+  margin-bottom: 16px;
+}
+.card-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 18px;
+}
+.card-feat {
+  font-size: 9px;
+  padding: 2px 7px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  background: var(--bg3);
+  letter-spacing: 0.3px;
+}
+.card-gold   .card-feat { border-color: rgba(201,168,76,0.2); color: var(--gold-dim); }
+.card-purple .card-feat { border-color: rgba(139,107,212,0.2); color: rgba(139,107,212,0.7); }
+.card-blue   .card-feat { border-color: rgba(76,139,207,0.2); color: rgba(76,139,207,0.7); }
+.card-green  .card-feat { border-color: rgba(76,175,110,0.2); color: rgba(76,175,110,0.7); }
+.card-red    .card-feat { border-color: rgba(207,76,76,0.2); color: rgba(207,76,76,0.7); }
+
+.card-launch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 3px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-decoration: none;
+  transition: all 0.15s;
+  align-self: flex-start;
+  border: 1px solid;
+  cursor: pointer;
+}
+.card-gold   .card-launch { background: rgba(201,168,76,0.12); border-color: var(--gold-dim); color: var(--gold); }
+.card-purple .card-launch { background: rgba(139,107,212,0.10); border-color: rgba(139,107,212,0.4); color: var(--purple); }
+.card-blue   .card-launch { background: rgba(76,139,207,0.10); border-color: rgba(76,139,207,0.4); color: var(--blue); }
+.card-green  .card-launch { background: rgba(76,175,110,0.10); border-color: rgba(76,175,110,0.4); color: var(--green); }
+.card-red    .card-launch { background: rgba(207,76,76,0.10); border-color: rgba(207,76,76,0.35); color: #e07070; }
+
+.card-launch:hover { filter: brightness(1.15); }
+.card-launch:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+
+/* ── API BADGE ── */
+.api-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  padding: 2px 7px;
+  border-radius: 8px;
+  background: rgba(139,107,212,0.08);
+  border: 1px solid rgba(139,107,212,0.25);
+  color: var(--purple);
+  margin-bottom: 10px;
+}
+
+/* ── ABOUT STRIP ── */
+.about-strip {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 28px 32px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 48px;
+}
+@media (max-width: 760px) {
+  .hero { padding: 42px 18px 38px; }
+  .hero-title { font-size: clamp(44px, 15vw, 68px); letter-spacing: 3px; }
+  .main { padding: 34px 16px 56px; }
+  .app-grid { grid-template-columns: 1fr; }
+  .app-card { padding: 20px; }
+  .about-strip { grid-template-columns: 1fr; padding: 22px; }
+}
+.about-item {}
+.about-item-label {
+  font-size: 9px;
+  color: var(--text-muted);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.about-item-val {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 18px;
+  color: var(--gold-dim);
+  letter-spacing: 1px;
+  margin-bottom: 3px;
+}
+.about-item-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* ── FOOTER ── */
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.footer-brand { display: flex; align-items: center; gap: 8px; }
+.footer-logo {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 16px;
+  color: var(--gold-dim);
+  letter-spacing: 2px;
+}
+.footer-links { display: flex; gap: 16px; }
+.footer-links a { color: var(--text-muted); text-decoration: none; transition: color 0.15s; }
+.footer-links a:hover { color: var(--gold); }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
+</style>
+</head>
+<body>
+
+<!-- ══ HERO ═══════════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-eyebrow">Modulo Studio · Professional Tools</div>
+  <div class="hero-title">The Producer's<br><span>Crate</span></div>
+  <div class="hero-tagline">Professional tools for the modern DJ and producer</div>
+  <p class="hero-desc">
+    Five browser-native tools built for working DJs and producers.
+    Analyze, prepare, mix, grade, and repurpose audio —
+    all without installing anything.
+  </p>
+  <div class="hero-badges">
+    <span class="hero-badge">⚡ Browser Native</span>
+    <span class="hero-badge">🔒 No Upload Required</span>
+    <span class="hero-badge">🎵 5 Professional Tools</span>
+    <span class="hero-badge">◎ AI Enhanced</span>
+  </div>
+</section>
+
+<div class="hero-divider"></div>
+
+<!-- ══ MAIN ════════════════════════════════════════════════════ -->
+<div class="main">
+
+  <!-- Apps section header -->
+  <div class="section-head">
+    <span class="section-title">The Tools</span>
+    <div class="section-line"></div>
+    <span style="font-size:10px;color:var(--text-muted)">5 apps</span>
+  </div>
+
+  <!-- App Grid -->
+  <div class="app-grid">
+
+    <!-- 1. Crate Chemistry -->
+    <div class="app-card card-gold">
+      <span class="card-icon">⚗</span>
+      <div class="card-header">
+        <div>
+          <div class="card-name">Crate Chemistry</div>
+          <div class="card-tagline">DJ Identity + Co-Pilot Intelligence</div>
+        </div>
+        <span class="card-version">v8.0.0</span>
+      </div>
+      <p class="card-desc">
+        The flagship intelligence engine. Analyzes your audio library, scores
+        compatibility, builds multi-track set routes, tracks your performance
+        style over time, and infers your DJ identity. Eight phases of
+        intelligence built into a single file.
+      </p>
+      <div class="card-features">
+        <span class="card-feat">BPM + Key + Camelot Analysis</span>
+        <span class="card-feat">Transition Intelligence</span>
+        <span class="card-feat">Set Architecture</span>
+        <span class="card-feat">Route Generation</span>
+        <span class="card-feat">Adaptive Branching</span>
+        <span class="card-feat">DJ Identity Model</span>
+        <span class="card-feat">Co-Pilot Coaching</span>
+        <span class="card-feat">Style Profile</span>
+      </div>
+      <a class="card-launch" href="crate-chemistry-v8.html">▶ Launch App →</a>
+    </div>
+
+    <!-- 2. Harmonic Mashup Studio -->
+    <div class="app-card card-purple">
+      <span class="card-icon">🎛</span>
+      <div class="card-header">
+        <div>
+          <div class="card-name">Harmonic Mashup Studio</div>
+          <div class="card-tagline">Mashup Construction + Harmonic Analysis</div>
+        </div>
+        <span class="card-version">v1.0.0</span>
+      </div>
+      <p class="card-desc">
+        Build better mashups by understanding harmonic relationships between
+        tracks. Analyzes key compatibility, suggests structure approaches,
+        and guides you through mashup construction with intelligent
+        pairing logic.
+      </p>
+      <div class="card-features">
+        <span class="card-feat">Harmonic Compatibility</span>
+        <span class="card-feat">Camelot Wheel Logic</span>
+        <span class="card-feat">Mashup Structure Guidance</span>
+        <span class="card-feat">Key Relationship Scoring</span>
+      </div>
+      <a class="card-launch" href="harmonic-mashup-studio.html">▶ Launch App →</a>
+    </div>
+
+    <!-- 3. Mix Grader -->
+    <div class="app-card card-blue">
+      <span class="card-icon">📊</span>
+      <div class="card-header">
+        <div>
+          <div class="card-name">Mix Grader</div>
+          <div class="card-tagline">Mix Analysis + Performance Scoring</div>
+        </div>
+        <span class="card-version">v1.0.0</span>
+      </div>
+      <p class="card-desc">
+        Upload or record a mix and get a detailed breakdown of your
+        performance. Analyzes transition timing, energy flow, harmonic
+        movement, and technical execution. Get an objective grade
+        with actionable improvement notes.
+      </p>
+      <div class="card-features">
+        <span class="card-feat">Mix Scoring</span>
+        <span class="card-feat">Transition Analysis</span>
+        <span class="card-feat">Energy Flow Review</span>
+        <span class="card-feat">Technical Grading</span>
+      </div>
+      <a class="card-launch" href="mix-grader.html">▶ Launch App →</a>
+    </div>
+
+    <!-- 4. Signal Clipper -->
+    <div class="app-card card-red">
+      <span class="card-icon">✂</span>
+      <div class="card-header">
+        <div>
+          <div class="card-name">Signal Clipper</div>
+          <div class="card-tagline">Audio Clipping + Gain Prep Tool</div>
+        </div>
+        <span class="card-version">v1.0.0</span>
+      </div>
+      <p class="card-desc">
+        Prepare your tracks for optimal gain staging before they hit the
+        decks. Detects clipping, normalizes levels, and outputs clean
+        audio ready for your DJ setup or production workflow.
+        Built with a distinct deep-purple aesthetic.
+      </p>
+      <div class="card-features">
+        <span class="card-feat">Clip Detection</span>
+        <span class="card-feat">Gain Staging</span>
+        <span class="card-feat">Level Normalization</span>
+        <span class="card-feat">DJ Prep Workflow</span>
+      </div>
+      <a class="card-launch" href="signal-clipper.html">▶ Launch App →</a>
+    </div>
+
+    <!-- 5. Creator Audio Studio -->
+    <div class="app-card card-green">
+      <span class="card-icon">🎙</span>
+      <div class="card-header">
+        <div>
+          <div class="card-name">Creator Audio Studio</div>
+          <div class="card-tagline">AI Audio Repurposing Suite</div>
+        </div>
+        <span class="card-version">v1.0.0</span>
+      </div>
+      <p class="card-desc">
+        Transform your audio content into new formats. Transcribes audio
+        with Whisper, then uses Claude AI to repurpose, summarize, adapt,
+        and restructure content for different platforms and use cases.
+      </p>
+      <div class="card-features">
+        <span class="card-feat">Whisper Transcription</span>
+        <span class="card-feat">AI Content Repurposing</span>
+        <span class="card-feat">Multi-Format Output</span>
+        <span class="card-feat">Platform Adaptation</span>
+      </div>
+      <div class="api-badge">◎ Requires API Key</div>
+      <a class="card-launch" href="creator-audio-studio.html">▶ Launch App →</a>
+    </div>
+
+  </div><!-- /app-grid -->
+
+  <!-- About strip -->
+  <div class="section-head">
+    <span class="section-title">About The Suite</span>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="about-strip">
+    <div class="about-item">
+      <div class="about-item-label">Architecture</div>
+      <div class="about-item-val">Browser Native</div>
+      <div class="about-item-desc">
+        Every app is a single HTML file. No install, no server, no build step.
+        Drop the file in a browser and go.
+      </div>
+    </div>
+    <div class="about-item">
+      <div class="about-item-label">Audio Processing</div>
+      <div class="about-item-val">Web Audio API</div>
+      <div class="about-item-desc">
+        All audio analysis runs locally in your browser using the Web Audio API.
+        Your files never leave your machine unless you choose to use AI features.
+      </div>
+    </div>
+    <div class="about-item">
+      <div class="about-item-label">AI Integration</div>
+      <div class="about-item-val">Anthropic Claude</div>
+      <div class="about-item-desc">
+        AI-powered features use Anthropic's Claude API directly from your browser.
+        Bring your own API key — nothing is proxied through any third party.
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- ══ FOOTER ═══════════════════════════════════════════════════ -->
+<footer class="footer">
+  <div class="footer-brand">
+    <span class="footer-logo">Modulo Studio</span>
+    <span style="color:var(--border)">·</span>
+    <span>The Producer's Crate</span>
+  </div>
+  <div style="font-size:10px;color:var(--text-muted);text-align:center">
+    5 apps · Browser native · No install required
+  </div>
+  <div class="footer-links">
+    <a href="#apps">Apps</a>
+    <a href="https://anthropic.com" target="_blank" rel="noopener">Anthropic</a>
+  </div>
+</footer>
+
+</body>
+</html>

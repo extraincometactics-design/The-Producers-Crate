@@ -1,0 +1,2970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Creator Audio Repurposing Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── RESET + VARIABLES ─────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:       #09090e;
+  --bg2:      #111118;
+  --bg3:      #181820;
+  --bg4:      #1f1f2a;
+  --border:   rgba(255,255,255,.07);
+  --border2:  rgba(255,255,255,.12);
+  --gold:     #e8b84b;
+  --gold2:    #c9972b;
+  --gold-dim: rgba(232,184,75,.15);
+  --gold-glow:rgba(232,184,75,.35);
+  --text:     #f0eff8;
+  --text2:    #c4c1d8;
+  --text3:    #9691b7;
+  --accent:   #7c6fcd;
+  --accent2:  #9d8fe8;
+  --teal:     #3ecfb2;
+  --red:      #f05c6e;
+  --green:    #3ed98a;
+  --radius:   10px;
+  --radius2:  14px;
+  --shadow:   0 4px 24px rgba(0,0,0,.5);
+  --shadow2:  0 8px 40px rgba(0,0,0,.7);
+  --header-h: 58px;
+  --player-h: 90px;
+  --sidebar-w:220px;
+  --right-w:  280px;
+  --font-head:'Syne',sans-serif;
+  --font-body:'DM Sans',sans-serif;
+  --font-mono:'DM Mono',monospace;
+}
+html{font-size:14px}
+body{
+  font-family:var(--font-body);
+  background:var(--bg);
+  color:var(--text);
+  height:100vh;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+a{color:inherit;text-decoration:none}
+button{font-family:var(--font-body);cursor:pointer;border:none;background:none;color:var(--text)}
+input,textarea,select{font-family:var(--font-body);color:var(--text);background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:8px 12px;font-size:.85rem;outline:none;transition:border-color .2s,box-shadow .2s}
+input:focus,textarea:focus,select:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-dim)}
+select option{background:var(--bg3)}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--text3)}
+
+/* ── HEADER ────────────────────────────────────────────────────── */
+#header{
+  height:var(--header-h);
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  padding:0 20px;
+  gap:16px;
+  flex-shrink:0;
+  z-index:100;
+}
+.header-brand{display:flex;align-items:baseline;gap:10px}
+.header-brand h1{
+  font-family:var(--font-head);
+  font-size:1.15rem;
+  font-weight:700;
+  color:var(--text);
+  letter-spacing:-.02em;
+}
+.header-brand h1 span{color:var(--gold)}
+.header-tagline{font-size:.72rem;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;font-weight:500}
+.header-spacer{flex:1}
+.header-actions{display:flex;gap:8px;align-items:center}
+.home-link{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid var(--border2);border-radius:var(--radius);color:var(--text2);font-size:.78rem;font-weight:700;text-decoration:none;transition:all .2s}
+.home-link:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+button:focus-visible,.btn:focus-visible,.home-link:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:var(--radius);
+  font-size:.8rem;font-weight:600;letter-spacing:.01em;
+  transition:all .2s;cursor:pointer;
+}
+.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--text2)}
+.btn-ghost:hover{border-color:var(--border2);background:var(--bg3);color:var(--text)}
+.btn-gold{background:var(--gold);color:#0a0810;border:none;font-weight:700}
+.btn-gold:hover{background:#f0c95a;transform:translateY(-1px);box-shadow:0 4px 16px var(--gold-glow)}
+.btn-outline-gold{background:transparent;border:1px solid var(--gold);color:var(--gold)}
+.btn-outline-gold:hover{background:var(--gold-dim)}
+.btn-sm{padding:5px 10px;font-size:.75rem}
+.btn-icon{padding:6px;border-radius:8px;width:32px;height:32px;justify-content:center}
+.btn-danger{background:rgba(240,92,110,.15);border:1px solid rgba(240,92,110,.3);color:var(--red)}
+.btn-danger:hover{background:rgba(240,92,110,.25)}
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 8px;border-radius:20px;font-size:.7rem;font-weight:600;letter-spacing:.03em;
+}
+.badge-gold{background:var(--gold-dim);color:var(--gold);border:1px solid rgba(232,184,75,.2)}
+.badge-teal{background:rgba(62,207,178,.12);color:var(--teal);border:1px solid rgba(62,207,178,.2)}
+.badge-accent{background:rgba(124,111,205,.15);color:var(--accent2);border:1px solid rgba(124,111,205,.25)}
+.badge-red{background:rgba(240,92,110,.12);color:var(--red);border:1px solid rgba(240,92,110,.2)}
+.badge-green{background:rgba(62,217,138,.12);color:var(--green);border:1px solid rgba(62,217,138,.2)}
+
+/* ── API KEY FIELDS ──────────────────────────────────────────────── */
+.api-key-wrap{position:relative;display:flex;gap:6px;align-items:center}
+.api-key-wrap input{flex:1;font-family:var(--font-mono);font-size:.78rem;letter-spacing:.04em}
+.key-toggle{
+  padding:6px 10px;border-radius:8px;background:var(--bg4);border:1px solid var(--border2);
+  font-size:.72rem;cursor:pointer;color:var(--text3);white-space:nowrap;transition:all .15s;flex-shrink:0;
+}
+.key-toggle:hover{color:var(--text);border-color:var(--border2)}
+.key-status{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:.7rem;padding:3px 8px;border-radius:20px;margin-top:5px;
+}
+.key-status.set{background:rgba(62,217,138,.1);color:var(--green);border:1px solid rgba(62,217,138,.2)}
+.key-status.unset{background:rgba(240,92,110,.08);color:var(--text3);border:1px solid var(--border)}
+.settings-section-title{
+  font-size:.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;
+  font-weight:700;padding:14px 0 8px;
+}
+/* AI generate banner */
+.ai-banner{
+  background:linear-gradient(135deg,rgba(124,111,205,.12),rgba(232,184,75,.08));
+  border:1px solid rgba(124,111,205,.25);border-radius:var(--radius2);
+  padding:14px 16px;margin-bottom:16px;
+  display:flex;align-items:center;gap:14px;
+}
+.ai-banner-icon{font-size:1.6rem;flex-shrink:0}
+.ai-banner-text{flex:1}
+.ai-banner-text h3{font-size:.85rem;font-weight:700;margin-bottom:3px}
+.ai-banner-text p{font-size:.75rem;color:var(--text2);line-height:1.4}
+.ai-generating{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 16px;background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--radius);margin-bottom:12px;
+}
+.ai-pulse{width:8px;height:8px;border-radius:50%;background:var(--accent2);animation:ai-pulse 1s infinite}
+@keyframes ai-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+/* Whisper status badge */
+.whisper-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 10px;border-radius:20px;font-size:.72rem;font-weight:600;
+}
+.whisper-badge.live{background:rgba(62,207,178,.12);color:var(--teal);border:1px solid rgba(62,207,178,.25)}
+.whisper-badge.mock{background:rgba(94,92,120,.12);color:var(--text3);border:1px solid var(--border)}
+
+/* ── LAYOUT ────────────────────────────────────────────────────── */
+#layout{
+  display:flex;
+  flex:1;
+  overflow:hidden;
+  height:calc(100vh - var(--header-h));
+}
+#sidebar{
+  width:var(--sidebar-w);
+  background:var(--bg2);
+  border-right:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  overflow-y:auto;
+  flex-shrink:0;
+}
+#main{
+  flex:1;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+}
+#workspace{
+  flex:1;
+  overflow-y:auto;
+  padding:20px;
+  padding-bottom:calc(var(--player-h) + 20px);
+}
+#right-panel{
+  width:var(--right-w);
+  background:var(--bg2);
+  border-left:1px solid var(--border);
+  overflow-y:auto;
+  flex-shrink:0;
+  padding:16px;
+}
+/* player */
+#player{
+  height:var(--player-h);
+  background:var(--bg2);
+  border-top:1px solid var(--border);
+  padding:0 20px;
+  display:flex;
+  align-items:center;
+  gap:16px;
+  flex-shrink:0;
+  position:relative;
+}
+
+/* ── SIDEBAR NAV ───────────────────────────────────────────────── */
+.sidebar-section{padding:16px 12px 8px;font-size:.65rem;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;font-weight:600}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 14px;margin:1px 8px;
+  border-radius:var(--radius);
+  font-size:.82rem;font-weight:500;color:var(--text2);
+  cursor:pointer;transition:all .15s;
+  position:relative;
+}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--gold-dim);color:var(--gold);font-weight:600}
+.nav-item.active::before{
+  content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:3px;height:60%;background:var(--gold);border-radius:0 2px 2px 0;
+}
+.nav-item .nav-icon{width:18px;height:18px;opacity:.8;flex-shrink:0}
+.nav-item.active .nav-icon{opacity:1}
+.nav-badge{margin-left:auto;font-size:.65rem;background:var(--gold-dim);color:var(--gold);padding:1px 6px;border-radius:10px;font-weight:700}
+
+.sidebar-project{
+  margin:12px;padding:12px;
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);
+}
+.sidebar-project .proj-title{font-size:.78rem;font-weight:600;margin-bottom:4px;color:var(--text);line-height:1.3}
+.sidebar-project .proj-meta{font-size:.7rem;color:var(--text3);display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.sidebar-project .proj-meta span{display:flex;align-items:center;gap:3px}
+.progress-bar{height:3px;background:var(--bg4);border-radius:4px;margin-top:8px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:4px;transition:width .5s ease}
+
+/* ── CARDS ─────────────────────────────────────────────────────── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:16px}
+.card-title{font-family:var(--font-head);font-size:.9rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-subtitle{font-size:.78rem;color:var(--text2);margin-top:-8px;margin-bottom:12px}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-title{font-family:var(--font-head);font-size:1rem;font-weight:700}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+
+/* ── UPLOAD TAB ────────────────────────────────────────────────── */
+#tab-upload{display:none}
+.dropzone{
+  border:2px dashed var(--border2);
+  border-radius:var(--radius2);
+  padding:48px 32px;
+  text-align:center;
+  cursor:pointer;
+  transition:all .25s;
+  background:var(--bg2);
+  position:relative;
+}
+.dropzone:hover,.dropzone.drag-over{
+  border-color:var(--gold);
+  background:var(--gold-dim);
+  box-shadow:inset 0 0 40px rgba(232,184,75,.05);
+}
+.dropzone .dz-icon{font-size:2.5rem;margin-bottom:12px;display:block}
+.dropzone h3{font-family:var(--font-head);font-size:1.1rem;font-weight:700;margin-bottom:6px}
+.dropzone p{font-size:.8rem;color:var(--text2);margin-bottom:16px}
+.formats{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.format-tag{padding:3px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;font-size:.7rem;font-weight:600;color:var(--text3);font-family:var(--font-mono)}
+#file-input{display:none}
+.upload-divider{display:flex;align-items:center;gap:12px;margin:20px 0}
+.upload-divider::before,.upload-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.upload-divider span{font-size:.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em}
+.record-btn{
+  width:100%;padding:14px;border-radius:var(--radius2);
+  background:var(--bg3);border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  font-size:.88rem;font-weight:600;color:var(--text2);
+  transition:all .2s;cursor:pointer;
+}
+.record-btn:hover{border-color:var(--red);color:var(--red);background:rgba(240,92,110,.08)}
+.record-dot{width:10px;height:10px;background:var(--red);border-radius:50%;animation:pulse-red 1.5s infinite}
+@keyframes pulse-red{0%,100%{box-shadow:0 0 0 0 rgba(240,92,110,.5)}50%{box-shadow:0 0 0 6px transparent}}
+
+.project-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);
+  padding:20px;display:flex;flex-direction:column;gap:14px;
+}
+.project-card .file-info{display:flex;align-items:center;gap:12px}
+.file-thumb{
+  width:48px;height:48px;background:var(--gold-dim);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;
+  border:1px solid rgba(232,184,75,.2);
+}
+.file-details h3{font-weight:600;font-size:.9rem;margin-bottom:4px}
+.file-details span{font-size:.75rem;color:var(--text3);font-family:var(--font-mono)}
+.meta-row{display:flex;gap:10px;flex-wrap:wrap}
+.meta-pill{
+  display:flex;align-items:center;gap:6px;
+  background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+  padding:6px 12px;font-size:.75rem;
+}
+.meta-pill .label{color:var(--text3)}
+.meta-pill .value{color:var(--text);font-weight:600}
+
+/* ── TRANSCRIPT TAB ────────────────────────────────────────────── */
+#tab-transcript{display:none}
+.transcript-toolbar{
+  display:flex;align-items:center;gap:8px;margin-bottom:14px;
+  padding:10px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);
+}
+.transcript-search{flex:1;background:transparent;border:none;font-size:.82rem;color:var(--text)}
+.transcript-search::placeholder{color:var(--text3)}
+.segment-list{display:flex;flex-direction:column;gap:2px}
+.segment{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:10px 12px;border-radius:var(--radius);
+  cursor:pointer;transition:background .15s;
+  border:1px solid transparent;
+}
+.segment:hover{background:var(--bg3)}
+.segment.active{background:var(--gold-dim);border-color:rgba(232,184,75,.2)}
+.segment.selected{background:var(--bg3);border-color:var(--border2)}
+.seg-time{
+  font-family:var(--font-mono);font-size:.7rem;color:var(--text3);
+  min-width:50px;padding-top:2px;flex-shrink:0;
+}
+.segment.active .seg-time{color:var(--gold)}
+.seg-text{font-size:.82rem;line-height:1.55;color:var(--text2);flex:1}
+.segment.active .seg-text{color:var(--text)}
+.seg-check{flex-shrink:0;padding-top:2px}
+.seg-check input[type=checkbox]{accent-color:var(--gold);cursor:pointer;width:14px;height:14px}
+
+/* ── CLIPS TAB ─────────────────────────────────────────────────── */
+#tab-clips{display:none}
+.clip-presets{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.preset-btn{
+  padding:8px 16px;border-radius:20px;
+  background:var(--bg3);border:1px solid var(--border2);
+  font-size:.78rem;font-weight:600;color:var(--text2);cursor:pointer;
+  transition:all .2s;
+}
+.preset-btn:hover,.preset-btn.active{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
+.clip-card{
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);
+  padding:14px;margin-bottom:10px;transition:all .2s;
+}
+.clip-card:hover{border-color:var(--border2);box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.clip-card.favorited{border-color:rgba(232,184,75,.3)}
+.clip-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.clip-num{
+  width:28px;height:28px;border-radius:8px;
+  background:var(--gold-dim);border:1px solid rgba(232,184,75,.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;font-weight:700;color:var(--gold);flex-shrink:0;
+  font-family:var(--font-mono);
+}
+.clip-title-wrap{flex:1}
+.clip-title{font-weight:600;font-size:.85rem;margin-bottom:3px}
+.clip-title input{background:transparent;border:none;padding:0;font-weight:600;font-size:.85rem;color:var(--text);width:100%}
+.clip-title input:focus{outline:none;border-bottom:1px solid var(--gold)}
+.clip-times{font-family:var(--font-mono);font-size:.7rem;color:var(--text3)}
+.clip-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.clip-body{font-size:.78rem;color:var(--text2);line-height:1.5;margin-bottom:10px}
+.clip-score-bar{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.score-label{font-size:.7rem;color:var(--text3);min-width:60px}
+.score-track{flex:1;height:4px;background:var(--bg4);border-radius:4px;overflow:hidden}
+.score-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--teal),var(--gold))}
+.score-val{font-size:.7rem;font-weight:700;color:var(--gold);font-family:var(--font-mono);min-width:28px;text-align:right}
+.clip-actions{display:flex;gap:6px;flex-wrap:wrap}
+.clip-actions .btn{padding:5px 10px;font-size:.72rem;gap:4px}
+
+/* ── AUDIOGRAMS TAB ─────────────────────────────────────────────── */
+#tab-audiograms{display:none}
+.audiogram-layout{display:grid;grid-template-columns:1fr 1.2fr;gap:16px;align-items:start}
+.audiogram-preview-wrap{display:flex;flex-direction:column;align-items:center;gap:12px}
+#audiogram-canvas{
+  border-radius:var(--radius2);border:1px solid var(--border2);
+  display:block;max-width:100%;
+}
+.style-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.style-option{
+  padding:10px;border-radius:var(--radius);border:2px solid var(--border);
+  cursor:pointer;text-align:center;transition:all .2s;background:var(--bg3);
+}
+.style-option:hover,.style-option.active{border-color:var(--gold);background:var(--gold-dim)}
+.style-option .style-preview{
+  height:32px;border-radius:6px;margin-bottom:6px;
+}
+.style-option span{font-size:.72rem;font-weight:600;color:var(--text2)}
+.style-option.active span{color:var(--gold)}
+.ratio-tabs{display:flex;gap:4px;background:var(--bg3);padding:3px;border-radius:8px;width:fit-content}
+.ratio-tab{padding:5px 14px;border-radius:6px;font-size:.72rem;font-weight:600;cursor:pointer;color:var(--text3);transition:all .15s}
+.ratio-tab.active{background:var(--gold);color:#0a0810}
+.form-field{margin-bottom:12px}
+.form-label{font-size:.72rem;color:var(--text3);margin-bottom:5px;display:block;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.form-field input,.form-field select{width:100%}
+.color-row{display:flex;gap:8px;align-items:center}
+.color-swatch{width:32px;height:32px;border-radius:8px;border:2px solid var(--border2);cursor:pointer;flex-shrink:0}
+input[type=range]{
+  -webkit-appearance:none;width:100%;height:4px;border-radius:4px;
+  background:var(--bg4);border:none;padding:0;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+  background:var(--gold);cursor:pointer;
+}
+input[type=color]{width:32px;height:32px;padding:0;border:2px solid var(--border2);border-radius:8px;cursor:pointer;background:none}
+
+/* ── SOCIAL TAB ─────────────────────────────────────────────────── */
+#tab-social{display:none}
+.social-card{
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);
+  padding:14px;margin-bottom:10px;
+}
+.social-card-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.platform-icon{
+  width:32px;height:32px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;
+}
+.platform-title{font-weight:700;font-size:.85rem}
+.platform-handle{font-size:.72rem;color:var(--text3)}
+.social-copy{
+  font-size:.82rem;line-height:1.6;color:var(--text2);
+  background:var(--bg2);border-radius:var(--radius);padding:10px 12px;margin-bottom:10px;
+  border:1px solid var(--border);min-height:60px;
+  cursor:text;
+}
+.social-copy:focus{outline:none;border-color:var(--gold)}
+.social-footer{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.hashtags{display:flex;gap:4px;flex-wrap:wrap;flex:1}
+.hashtag{font-size:.68rem;color:var(--accent2);background:rgba(124,111,205,.1);padding:2px 8px;border-radius:20px;cursor:pointer;transition:background .15s}
+.hashtag:hover{background:rgba(124,111,205,.2)}
+.tone-select{padding:5px 8px;border-radius:8px;font-size:.72rem;border:1px solid var(--border2)}
+
+/* ── TRANSLATION TAB ────────────────────────────────────────────── */
+#tab-translation{display:none}
+.lang-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.lang-card{
+  padding:10px;border-radius:var(--radius);border:2px solid var(--border);
+  cursor:pointer;text-align:center;transition:all .2s;background:var(--bg3);
+}
+.lang-card:hover,.lang-card.active{border-color:var(--gold);background:var(--gold-dim)}
+.lang-flag{font-size:1.3rem;display:block;margin-bottom:4px}
+.lang-name{font-size:.72rem;font-weight:600;color:var(--text2)}
+.lang-card.active .lang-name{color:var(--gold)}
+.translation-table{border-collapse:collapse;width:100%}
+.translation-table th{
+  text-align:left;padding:8px 12px;font-size:.7rem;
+  color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.06em;
+  border-bottom:1px solid var(--border);background:var(--bg3);
+}
+.translation-table td{
+  padding:10px 12px;font-size:.78rem;border-bottom:1px solid var(--border);
+  vertical-align:top;
+}
+.translation-table tr:last-child td{border-bottom:none}
+.translation-table tr:hover td{background:var(--bg3)}
+.td-time{font-family:var(--font-mono);color:var(--text3);min-width:50px}
+.td-orig{color:var(--text2);max-width:200px}
+.td-trans{color:var(--text);max-width:200px}
+.voice-options{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.voice-option{
+  padding:10px;border-radius:var(--radius);border:2px solid var(--border);
+  cursor:pointer;transition:all .2s;background:var(--bg3);
+}
+.voice-option:hover,.voice-option.active{border-color:var(--teal);background:rgba(62,207,178,.08)}
+.voice-option .vname{font-size:.78rem;font-weight:600;margin-bottom:2px}
+.voice-option .vdesc{font-size:.7rem;color:var(--text3)}
+.voice-option.active .vname{color:var(--teal)}
+
+/* ── EXPORT TAB ─────────────────────────────────────────────────── */
+#tab-export{display:none}
+.export-card{
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);
+  padding:14px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start;
+}
+.export-icon{
+  width:44px;height:44px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;
+}
+.export-info{flex:1;min-width:0}
+.export-name{font-weight:600;font-size:.85rem;margin-bottom:3px}
+.export-desc{font-size:.75rem;color:var(--text2);margin-bottom:10px}
+.export-controls{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.export-select{padding:5px 8px;border-radius:7px;font-size:.72rem;border:1px solid var(--border2)}
+.export-actions{display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0}
+.export-size{font-size:.68rem;color:var(--text3);font-family:var(--font-mono);text-align:right}
+
+/* ── PLAYER ─────────────────────────────────────────────────────── */
+.player-left{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.player-title{font-size:.75rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.player-subtitle{font-size:.68rem;color:var(--text3)}
+.play-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--gold);display:flex;align-items:center;justify-content:center;
+  font-size:1rem;cursor:pointer;transition:all .2s;flex-shrink:0;border:none;
+  color:#0a0810;
+}
+.play-btn:hover{background:#f0c95a;transform:scale(1.05);box-shadow:0 0 16px var(--gold-glow)}
+.player-center{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0}
+#waveform-canvas{width:100%;height:36px;cursor:pointer;border-radius:6px;display:block}
+.player-times{display:flex;justify-content:space-between;align-items:center}
+.player-time{font-family:var(--font-mono);font-size:.68rem;color:var(--text3)}
+.progress-scrubber{
+  width:100%;height:3px;background:var(--bg4);border-radius:4px;cursor:pointer;
+  appearance:none;border:none;margin:0;padding:0;
+}
+.progress-scrubber::-webkit-slider-thumb{
+  -webkit-appearance:none;width:12px;height:12px;border-radius:50%;
+  background:var(--gold);cursor:pointer;
+}
+.player-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.vol-slider{width:70px;height:3px;background:var(--bg4);border-radius:4px;border:none;appearance:none;padding:0}
+.vol-slider::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;border-radius:50%;background:var(--text2);cursor:pointer}
+
+/* ── RIGHT PANEL ────────────────────────────────────────────────── */
+.right-section{margin-bottom:20px}
+.right-section-title{
+  font-size:.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;
+  font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px;
+}
+.right-section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.info-grid{display:flex;flex-direction:column;gap:6px}
+.info-row{display:flex;justify-content:space-between;align-items:center;font-size:.78rem}
+.info-row .key{color:var(--text3)}
+.info-row .val{color:var(--text);font-weight:500;font-family:var(--font-mono)}
+.stat-box{
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);
+  padding:10px;text-align:center;
+}
+.stat-val{font-family:var(--font-head);font-size:1.4rem;font-weight:700;color:var(--gold);display:block}
+.stat-label{font-size:.68rem;color:var(--text3);margin-top:2px}
+
+/* ── MODALS ─────────────────────────────────────────────────────── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);
+  display:none;align-items:center;justify-content:center;z-index:1000;
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius2);
+  padding:24px;width:480px;max-width:90vw;max-height:85vh;overflow-y:auto;
+  box-shadow:var(--shadow2);animation:modalIn .2s ease;
+}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:none}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-title{font-family:var(--font-head);font-size:1.1rem;font-weight:700}
+.modal-close{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:var(--bg3);cursor:pointer;color:var(--text2);font-size:1rem}
+.modal-close:hover{background:var(--bg4);color:var(--text)}
+.settings-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+.settings-row:last-child{border-bottom:none}
+.settings-label{font-size:.82rem;color:var(--text);font-weight:500}
+.settings-hint{font-size:.72rem;color:var(--text3)}
+.toggle{
+  width:40px;height:22px;background:var(--bg4);border-radius:11px;
+  cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;
+}
+.toggle.on{background:var(--gold)}
+.toggle::after{
+  content:'';position:absolute;top:3px;left:3px;
+  width:16px;height:16px;border-radius:50%;background:#fff;
+  transition:transform .2s;
+}
+.toggle.on::after{transform:translateX(18px)}
+
+/* ── TOASTS ─────────────────────────────────────────────────────── */
+#toast-container{
+  position:fixed;bottom:calc(var(--player-h) + 16px);right:16px;
+  z-index:2000;display:flex;flex-direction:column-reverse;gap:8px;
+}
+.toast{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 16px;border-radius:var(--radius);
+  background:var(--bg3);border:1px solid var(--border2);
+  box-shadow:var(--shadow2);font-size:.8rem;font-weight:500;
+  animation:toastIn .25s ease;min-width:220px;
+}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+.toast.toast-success{border-color:rgba(62,217,138,.3);background:rgba(62,217,138,.07)}
+.toast.toast-error{border-color:rgba(240,92,110,.3);background:rgba(240,92,110,.07)}
+.toast.toast-info{border-color:rgba(124,111,205,.3);background:rgba(124,111,205,.07)}
+.toast-icon{font-size:1rem;flex-shrink:0}
+
+/* ── LOADING OVERLAY ─────────────────────────────────────────────── */
+.loading-bar{height:2px;background:var(--bg4);border-radius:4px;overflow:hidden;margin:8px 0}
+.loading-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--teal));border-radius:4px;transition:width .4s ease}
+.loading-state{
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  padding:40px;text-align:center;
+}
+.spinner{
+  width:36px;height:36px;border:3px solid var(--bg4);
+  border-top-color:var(--gold);border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-label{font-size:.82rem;color:var(--text2)}
+
+/* ── EMPTY STATE ────────────────────────────────────────────────── */
+.empty-state{
+  text-align:center;padding:48px 20px;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+}
+.empty-icon{font-size:2.5rem;margin-bottom:4px;opacity:.5}
+.empty-title{font-family:var(--font-head);font-size:.95rem;font-weight:700;color:var(--text2)}
+.empty-desc{font-size:.78rem;color:var(--text3);max-width:260px;line-height:1.5}
+
+/* ── TRANSCRIPT STATS ────────────────────────────────────────────── */
+.stat-row{display:flex;gap:10px;margin-bottom:14px}
+.mini-stat{
+  flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);
+  padding:10px;text-align:center;
+}
+.mini-stat .mval{font-family:var(--font-head);font-size:1.1rem;font-weight:700;color:var(--gold)}
+.mini-stat .mlabel{font-size:.68rem;color:var(--text3);margin-top:2px}
+
+/* ── UTILITY ────────────────────────────────────────────────────── */
+.flex{display:flex}.gap-8{gap:8px}.gap-12{gap:12px}.align-center{align-items:center}
+.mt-4{margin-top:4px}.mt-8{margin-top:8px}.mt-12{margin-top:12px}.mt-16{margin-top:16px}
+.mb-8{margin-bottom:8px}.mb-12{margin-bottom:12px}
+.text-gold{color:var(--gold)}.text-muted{color:var(--text3)}.text-sm{font-size:.78rem}
+.fw-6{font-weight:600}.fw-7{font-weight:700}
+.hidden{display:none!important}
+.sep{height:1px;background:var(--border);margin:14px 0}
+.glow-dot{
+  display:inline-block;width:7px;height:7px;border-radius:50%;
+  background:var(--green);box-shadow:0 0 6px var(--green);flex-shrink:0;
+}
+/* ── WAVEFORM LOADING ───────────────────────────────────────────── */
+.wave-bars{display:flex;align-items:center;gap:2px;height:20px}
+.wave-bar{width:3px;background:var(--gold);border-radius:2px;animation:wave-dance .8s ease-in-out infinite}
+.wave-bar:nth-child(2){animation-delay:.1s}.wave-bar:nth-child(3){animation-delay:.2s}
+.wave-bar:nth-child(4){animation-delay:.3s}.wave-bar:nth-child(5){animation-delay:.4s}
+@keyframes wave-dance{0%,100%{height:4px}50%{height:18px}}
+/* ── TRANSLATION AI ─────────────────────────────────────────────── */
+.trans-ai-banner{
+  background:linear-gradient(135deg,rgba(62,207,178,.08),rgba(232,184,75,.06));
+  border:1px solid rgba(62,207,178,.2);border-radius:var(--radius2);
+  padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:14px;
+}
+.trans-progress{
+  padding:10px 14px;background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--radius);display:none;align-items:center;gap:10px;margin-bottom:12px;
+}
+.trans-seg-count{font-size:.68rem;color:var(--text3);font-family:var(--font-mono);margin-left:auto}
+
+/* ── RESPONSIVE ─────────────────────────────────────────────────── */
+@media(max-width:900px){
+  :root{--sidebar-w:52px;--right-w:0px}
+  #header{height:auto;min-height:var(--header-h);align-items:flex-start;flex-wrap:wrap;padding:10px 12px}
+  .header-brand{width:100%;flex-wrap:wrap}
+  .header-tagline{width:100%}
+  .header-spacer{display:none}
+  .header-actions{width:100%;flex-wrap:wrap}
+  .home-link{order:-1}
+  .nav-item span,.sidebar-section,.sidebar-project,#right-panel{display:none}
+  .nav-item{padding:10px;justify-content:center}
+  #right-panel{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<div id="header">
+  <div class="header-brand">
+    <h1>Creator<span>Studio</span></h1>
+    <div class="header-tagline">Record once · Publish everywhere</div>
+  </div>
+  <div class="header-spacer"></div>
+  <div class="header-actions">
+    <a class="home-link" href="producers-crate-index.html">← Crate Home</a>
+    <button class="btn btn-ghost btn-sm" onclick="newProject()">✦ New Project</button>
+    <button class="btn btn-ghost btn-sm" onclick="exportAll()">⬇ Export All</button>
+    <button class="btn btn-ghost btn-sm btn-icon" onclick="openSettings()" title="Settings">⚙</button>
+  </div>
+</div>
+
+<!-- ── MAIN LAYOUT ── -->
+<div id="layout">
+
+  <!-- LEFT SIDEBAR -->
+  <div id="sidebar">
+    <div class="sidebar-section">Workspace</div>
+    <div class="nav-item active" onclick="switchTab('upload')" id="nav-upload">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12V4m-4 4l4-4 4 4M3 15h14a1 1 0 010 2H3a1 1 0 010-2z"/></svg>
+      <span>Upload</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('transcript')" id="nav-transcript">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4h12v2H4V4zm0 4h12v2H4V8zm0 4h7v2H4v-2z"/></svg>
+      <span>Transcript</span>
+      <span class="nav-badge" id="seg-count-badge">24</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('clips')" id="nav-clips">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zm8 0a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2h-2zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zm8 0a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2h-2z"/></svg>
+      <span>Clips</span>
+      <span class="nav-badge" id="clip-count-badge">5</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('audiograms')" id="nav-audiograms">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z"/></svg>
+      <span>Audiograms</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('social')" id="nav-social">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5zm11 1h1a2 2 0 012 2v4a2 2 0 01-2 2h-1l-2 2v-2H9a2 2 0 01-2-2v-1h1a3 3 0 003-3V6z"/></svg>
+      <span>Social Copy</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('translation')" id="nav-translation">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M7 2a1 1 0 011 1v1h3a1 1 0 110 2H9.578a18.87 18.87 0 01-1.724 4.78c.29.354.596.696.914 1.026a1 1 0 11-1.44 1.389c-.188-.196-.373-.396-.554-.6a19.098 19.098 0 01-3.107 3.567 1 1 0 01-1.334-1.49 17.087 17.087 0 003.13-3.733 18.992 18.992 0 01-1.487-3.754 1 1 0 111.93-.534 17.071 17.071 0 001.46 3.6A16.853 16.853 0 008 8.5H6a1 1 0 110-2h1V3a1 1 0 011-1zm6 6a1 1 0 01.894.553l2.991 5.982a.869.869 0 01.02.037l.99 1.98a1 1 0 11-1.79.895L15.383 16h-4.764l-.724 1.447a1 1 0 11-1.788-.894l.99-1.98.019-.038 2.99-5.982A1 1 0 0113 8zm-1.382 6h2.764L13 11.236 11.618 14z"/></svg>
+      <span>Translation</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('export')" id="nav-export">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"/></svg>
+      <span>Export</span>
+    </div>
+
+    <div style="flex:1"></div>
+
+    <!-- Project card in sidebar -->
+    <div class="sidebar-project" id="sidebar-project-card">
+      <div class="proj-title" id="sidebar-proj-title" style="color:var(--text3);font-style:italic">No project loaded</div>
+      <div class="proj-meta" id="sidebar-proj-meta" style="color:var(--text3)">
+        <span>Upload a file to begin</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="sidebar-progress" style="width:0%"></div></div>
+    </div>
+    <div style="height:10px"></div>
+  </div><!-- /sidebar -->
+
+  <!-- MAIN WORKSPACE -->
+  <div id="main">
+    <div id="workspace">
+
+      <!-- ══ UPLOAD TAB ══ -->
+      <div id="tab-upload">
+        <div id="upload-area">
+          <div class="dropzone" id="dropzone" ondragover="dzDragOver(event)" ondragleave="dzDragLeave()" ondrop="dzDrop(event)" onclick="document.getElementById('file-input').click()">
+            <span class="dz-icon">🎵</span>
+            <h3>Drop your audio or video here</h3>
+            <p>Drag and drop your recording, or click to browse</p>
+            <div class="formats">
+              <span class="format-tag">MP3</span>
+              <span class="format-tag">WAV</span>
+              <span class="format-tag">MP4</span>
+              <span class="format-tag">M4A</span>
+              <span class="format-tag">AIFF</span>
+              <span class="format-tag">OGG</span>
+            </div>
+          </div>
+          <input type="file" id="file-input" accept="audio/*,video/*" onchange="handleFileUpload(this.files[0])">
+          <div class="upload-divider"><span>or</span></div>
+          <button class="record-btn" onclick="mockRecord()">
+            <div class="record-dot"></div>
+            Record in Browser
+          </button>
+        </div>
+
+        <div id="project-info-card" class="project-card mt-16" style="display:none">
+          <div class="file-info">
+            <div class="file-thumb" id="file-thumb">🎙</div>
+            <div class="file-details">
+              <h3 id="file-name">The Creator Playbook - Ep 47.mp3</h3>
+              <span id="file-meta">MP3 · 24:37 · 34.2 MB</span>
+            </div>
+          </div>
+          <div>
+            <label class="form-label">Project Title</label>
+            <input type="text" id="project-title" value="The Creator Playbook — Episode 47: Building Your Audience in 2025" style="width:100%">
+          </div>
+          <div class="meta-row">
+            <div class="meta-pill"><span class="label">Duration</span><span class="value" id="meta-duration">24:37</span></div>
+            <div class="meta-pill"><span class="label">Words</span><span class="value">3,842</span></div>
+            <div class="meta-pill"><span class="label">Language</span><span class="value">English</span></div>
+            <div class="meta-pill"><span class="label">Clips Ready</span><span class="value text-gold">5</span></div>
+          </div>
+          <div id="transcribe-section">
+            <div id="transcribe-idle" style="display:flex;gap:8px;align-items:center">
+              <button class="btn btn-gold" onclick="startTranscribe()">⚡ Transcribe Recording</button>
+              <span class="text-sm text-muted">Auto-detect language · ~30 seconds</span>
+            </div>
+            <div id="transcribe-loading" style="display:none">
+              <div class="loading-label mb-8" id="transcribe-label">Analyzing audio...</div>
+              <div class="loading-bar"><div class="loading-bar-fill" id="transcribe-bar" style="width:0%"></div></div>
+            </div>
+            <div id="transcribe-done" style="display:none">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="color:var(--green)">✓</span>
+                <span class="text-sm">Transcript ready — 3,842 words, 24 segments</span>
+                <button class="btn btn-ghost btn-sm" onclick="switchTab('transcript')">View Transcript →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- First-time welcome tip -->
+        <div class="card mt-16" id="sample-tip" style="display:none">
+          <div class="card-title">👋 Welcome to Creator Studio</div>
+          <p class="text-sm text-muted" style="line-height:1.6">Upload a recording to get started, or load the demo project to explore the full workflow first.</p>
+          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-outline-gold btn-sm" onclick="loadDemoProject()">Load Demo Project</button>
+            <button class="btn btn-ghost btn-sm" onclick="openSettings()">⚙ Add API Keys</button>
+          </div>
+        </div>
+
+        <!-- Returning user tip -->
+        <div class="card mt-16" id="returning-tip" style="display:none">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:1.2rem">🎙</span>
+            <div>
+              <div style="font-size:.82rem;font-weight:600;margin-bottom:2px">Ready for your next recording</div>
+              <div class="text-sm text-muted">Drop a file above or <button class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:.72rem" onclick="loadDemoProject()">load the demo</button> to explore features.</div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /tab-upload -->
+
+      <!-- ══ TRANSCRIPT TAB ══ -->
+      <div id="tab-transcript">
+        <div id="transcript-demo-notice" style="display:none;margin-bottom:14px;padding:10px 14px;background:rgba(232,184,75,.07);border:1px solid rgba(232,184,75,.2);border-radius:10px;display:none;align-items:center;gap:10px">
+          <span style="color:var(--gold);font-size:1rem">⚠</span>
+          <span style="font-size:.78rem;color:var(--text2);flex:1">This is a <strong style="color:var(--gold)">demo transcript</strong> — not your recording. Add OpenAI credits to transcribe your actual file.</span>
+          <button class="btn btn-outline-gold btn-sm" onclick="openSettings()">Settings →</button>
+        </div>
+        <div class="section-header">
+          <div class="section-title">Transcript Editor</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span class="whisper-badge" id="whisper-badge">● Mock</span>
+            <button class="btn btn-ghost btn-sm" onclick="exportSRT()">↓ SRT</button>
+            <button class="btn btn-ghost btn-sm" onclick="exportVTT()">↓ VTT</button>
+            <button class="btn btn-ghost btn-sm" onclick="exportTXT()">↓ TXT</button>
+          </div>
+        </div>
+        <div class="stat-row">
+          <div class="mini-stat"><div class="mval">3,842</div><div class="mlabel">Words</div></div>
+          <div class="mini-stat"><div class="mval">24</div><div class="mlabel">Segments</div></div>
+          <div class="mini-stat"><div class="mval">24:37</div><div class="mlabel">Duration</div></div>
+          <div class="mini-stat"><div class="mval">156</div><div class="mlabel">WPM</div></div>
+        </div>
+        <div class="transcript-toolbar">
+          <svg style="width:16px;height:16px;opacity:.4;flex-shrink:0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"/></svg>
+          <input type="text" class="transcript-search" placeholder="Search transcript..." id="transcript-search" oninput="filterTranscript(this.value)">
+          <button class="btn btn-ghost btn-sm" onclick="selectAllSegments()">Select All</button>
+          <button class="btn btn-ghost btn-sm" onclick="deselectAllSegments()">Clear</button>
+          <button class="btn btn-outline-gold btn-sm" onclick="clipFromSelected()">✂ Clip Selected</button>
+        </div>
+        <div class="segment-list" id="segment-list"></div>
+      </div><!-- /tab-transcript -->
+
+      <!-- ══ CLIPS TAB ══ -->
+      <div id="tab-clips">
+        <div class="ai-banner" id="clips-ai-banner" style="background:linear-gradient(135deg,rgba(62,217,138,.08),rgba(232,184,75,.06));border-color:rgba(62,217,138,.2)">
+          <div class="ai-banner-icon">✂</div>
+          <div class="ai-banner-text">
+            <h3>AI Clip Suggestions</h3>
+            <p>Claude analyzes your real transcript to find the highest-impact moments worth clipping.</p>
+          </div>
+          <button class="btn btn-gold" onclick="generateClipsWithClaude()" id="claude-clips-btn">Analyze</button>
+        </div>
+        <div id="clips-ai-generating" style="display:none" class="ai-generating">
+          <div class="ai-pulse"></div>
+          <span style="font-size:.82rem;color:var(--text2)" id="clips-ai-label">Claude is scanning your transcript for key moments…</span>
+        </div>
+        <div class="section-header">
+          <div class="section-title">Smart Clips</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost btn-sm" onclick="generateClips()">⚡ Regenerate</button>
+            <button class="btn btn-gold btn-sm" onclick="saveAllClips()">✦ Save All Clips</button>
+          </div>
+        </div>
+        <div class="clip-presets">
+          <span style="font-size:.75rem;color:var(--text3);align-self:center;margin-right:4px">Target length:</span>
+          <div class="preset-btn active" onclick="setClipPreset(this,'15s')">15 sec</div>
+          <div class="preset-btn" onclick="setClipPreset(this,'30s')">30 sec</div>
+          <div class="preset-btn" onclick="setClipPreset(this,'60s')">60 sec</div>
+          <div class="preset-btn" onclick="setClipPreset(this,'custom')">Custom</div>
+        </div>
+        <div id="clips-loading" class="loading-state hidden">
+          <div class="spinner"></div>
+          <div class="loading-label" id="clips-loading-label">Analyzing transcript for high-impact moments...</div>
+        </div>
+        <div id="clips-list"></div>
+      </div><!-- /tab-clips -->
+
+      <!-- ══ AUDIOGRAMS TAB ══ -->
+      <div id="tab-audiograms">
+        <div class="section-header">
+          <div class="section-title">Audiogram Generator</div>
+          <button class="btn btn-gold btn-sm" onclick="exportAudiogram()">↓ Export Audiogram</button>
+        </div>
+        <div class="audiogram-layout">
+          <div class="audiogram-preview-wrap">
+            <canvas id="audiogram-canvas" width="280" height="420"></canvas>
+            <div style="display:flex;gap:8px;justify-content:center">
+              <div class="ratio-tabs">
+                <div class="ratio-tab" onclick="setRatio('9:16',this)">9:16</div>
+                <div class="ratio-tab active" onclick="setRatio('1:1',this)">1:1</div>
+                <div class="ratio-tab" onclick="setRatio('16:9',this)">16:9</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center">
+              <div class="glow-dot" style="background:var(--teal);box-shadow:0 0 6px var(--teal)"></div>
+              <span style="font-size:.72rem;color:var(--text3)">Live preview · updates in real-time</span>
+            </div>
+          </div>
+          <div>
+            <div class="right-section-title">Background Style</div>
+            <div class="style-grid" style="margin-bottom:16px">
+              <div class="style-option active" onclick="setAudiogramStyle('minimal-dark',this)">
+                <div class="style-preview" style="background:linear-gradient(135deg,#0a0a0e,#1a1a28)"></div>
+                <span>Minimal Dark</span>
+              </div>
+              <div class="style-option" onclick="setAudiogramStyle('neon-pulse',this)">
+                <div class="style-preview" style="background:linear-gradient(135deg,#0d001a,#1a0040)"></div>
+                <span>Neon Pulse</span>
+              </div>
+              <div class="style-option" onclick="setAudiogramStyle('podcast-studio',this)">
+                <div class="style-preview" style="background:linear-gradient(135deg,#1a0a00,#2d1500)"></div>
+                <span>Podcast Studio</span>
+              </div>
+              <div class="style-option" onclick="setAudiogramStyle('bold-gradient',this)">
+                <div class="style-preview" style="background:linear-gradient(135deg,#0a001a,#001a2d)"></div>
+                <span>Bold Gradient</span>
+              </div>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Show Title</label>
+              <input type="text" id="ag-title" value="The Creator Playbook" oninput="renderAudiogram()">
+            </div>
+            <div class="form-field">
+              <label class="form-label">Episode / Subtitle</label>
+              <input type="text" id="ag-subtitle" value="Ep. 47 · Building Your Audience in 2025" oninput="renderAudiogram()">
+            </div>
+            <div class="form-field">
+              <label class="form-label">Caption Text</label>
+              <input type="text" id="ag-caption" value="&quot;Consistency beats virality every single time.&quot;" oninput="renderAudiogram()">
+            </div>
+            <div class="form-field">
+              <label class="form-label">Brand Color</label>
+              <div class="color-row">
+                <input type="color" id="ag-color" value="#e8b84b" onchange="renderAudiogram()">
+                <input type="text" value="#e8b84b" id="ag-color-hex" style="flex:1" oninput="syncColorHex()">
+              </div>
+            </div>
+            <div class="form-field">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <label class="form-label" style="margin:0">Show Captions</label>
+                <div class="toggle on" id="caption-toggle" onclick="toggleCaption()"></div>
+              </div>
+            </div>
+            <div class="form-field">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <label class="form-label" style="margin:0">Waveform Animation</label>
+                <div class="toggle on" id="wave-toggle" onclick="toggleWave()"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /tab-audiograms -->
+
+      <!-- ══ SOCIAL COPY TAB ══ -->
+      <div id="tab-social">
+        <div class="ai-banner" id="social-ai-banner">
+          <div class="ai-banner-icon">✦</div>
+          <div class="ai-banner-text">
+            <h3>Generate with Claude AI</h3>
+            <p>Uses your real transcript to write platform-native copy across all 5 channels in every tone.</p>
+          </div>
+          <button class="btn btn-gold" onclick="generateWithClaude()" id="claude-gen-btn">Generate All</button>
+        </div>
+        <div id="ai-generating-indicator" style="display:none" class="ai-generating">
+          <div class="ai-pulse"></div>
+          <span style="font-size:.82rem;color:var(--text2)" id="ai-gen-label">Claude is writing your social copy…</span>
+        </div>
+        <div class="section-header">
+          <div class="section-title">Social Copy Generator</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <label class="form-label" style="margin:0;white-space:nowrap">Tone:</label>
+            <select id="global-tone" onchange="applyGlobalTone()" style="padding:5px 10px;border-radius:8px;font-size:.78rem">
+              <option value="viral">🔥 Viral</option>
+              <option value="professional">💼 Professional</option>
+              <option value="casual" selected>😎 Casual</option>
+              <option value="educational">📚 Educational</option>
+              <option value="bold">⚡ Bold</option>
+            </select>
+            <button class="btn btn-ghost btn-sm" onclick="regenAllCopy()">⟳ Regenerate All</button>
+          </div>
+        </div>
+        <div id="social-cards-list"></div>
+      </div><!-- /tab-social -->
+
+      <!-- ══ TRANSLATION TAB ══ -->
+      <div id="tab-translation">
+        <div class="trans-ai-banner">
+          <div class="ai-banner-icon">🌐</div>
+          <div class="ai-banner-text">
+            <h3>Translate with Claude AI</h3>
+            <p>Translates your real transcript segment-by-segment into the selected language.</p>
+          </div>
+          <button class="btn btn-gold btn-sm" onclick="translateWithClaude()" id="trans-gen-btn">Translate</button>
+        </div>
+        <div class="trans-progress" id="trans-progress">
+          <div class="ai-pulse"></div>
+          <span style="font-size:.82rem;color:var(--text2)" id="trans-progress-label">Translating transcript…</span>
+          <span class="trans-seg-count" id="trans-seg-count"></span>
+        </div>
+        <div class="section-header">
+          <div class="section-title">Translation & Voiceover</div>
+          <button class="btn btn-ghost btn-sm" onclick="exportTranslation()">↓ Export</button>
+        </div>
+        <div class="card mb-12">
+          <div class="card-title">Target Language</div>
+          <div class="lang-grid" id="lang-grid">
+            <div class="lang-card active" onclick="setLang('es',this)"><span class="lang-flag">🇪🇸</span><div class="lang-name">Spanish</div></div>
+            <div class="lang-card" onclick="setLang('fr',this)"><span class="lang-flag">🇫🇷</span><div class="lang-name">French</div></div>
+            <div class="lang-card" onclick="setLang('de',this)"><span class="lang-flag">🇩🇪</span><div class="lang-name">German</div></div>
+            <div class="lang-card" onclick="setLang('pt',this)"><span class="lang-flag">🇧🇷</span><div class="lang-name">Portuguese</div></div>
+            <div class="lang-card" onclick="setLang('ja',this)"><span class="lang-flag">🇯🇵</span><div class="lang-name">Japanese</div></div>
+            <div class="lang-card" onclick="setLang('ko',this)"><span class="lang-flag">🇰🇷</span><div class="lang-name">Korean</div></div>
+          </div>
+        </div>
+        <div class="card mb-12">
+          <div class="card-title">Voiceover Style</div>
+          <div class="voice-options" id="voice-options"></div>
+          <div class="grid2" style="margin-top:10px">
+            <div class="form-field">
+              <label class="form-label">Voice Gender</label>
+              <select style="width:100%"><option>Female</option><option>Male</option><option>Neutral</option></select>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Speed</label>
+              <select style="width:100%"><option>0.9x</option><option selected>1.0x</option><option>1.1x</option><option>1.25x</option></select>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Translation Preview <span id="trans-lang-label" class="badge badge-gold" style="font-size:.68rem">Spanish</span></div>
+          <div style="overflow-x:auto">
+            <table class="translation-table" id="translation-table">
+              <thead><tr><th>Time</th><th>Original (EN)</th><th>Translation</th></tr></thead>
+              <tbody id="translation-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /tab-translation -->
+
+      <!-- ══ EXPORT TAB ══ -->
+      <div id="tab-export">
+        <div class="section-header">
+          <div class="section-title">Export Hub</div>
+          <button class="btn btn-gold btn-sm" onclick="exportAll()">⬇ Export All Assets</button>
+        </div>
+        <div id="export-cards"></div>
+      </div><!-- /tab-export -->
+
+    </div><!-- /workspace -->
+
+    <!-- PLAYER -->
+    <div id="player">
+      <div class="player-left">
+        <button class="play-btn" id="play-btn" onclick="togglePlay()">▶</button>
+        <div>
+          <div class="player-title" id="player-title">The Creator Playbook — Ep. 47</div>
+          <div class="player-subtitle" id="player-status">Ready · 24:37</div>
+        </div>
+      </div>
+      <div class="player-center">
+        <canvas id="waveform-canvas" height="36"></canvas>
+        <div class="player-times">
+          <span class="player-time" id="current-time">0:00</span>
+          <input type="range" class="progress-scrubber" id="scrubber" min="0" max="100" value="0" oninput="scrub(this.value)">
+          <span class="player-time" id="total-time">24:37</span>
+        </div>
+      </div>
+      <div class="player-right">
+        <span style="font-size:.9rem;color:var(--text3)">🔊</span>
+        <input type="range" class="vol-slider" min="0" max="100" value="80" id="vol-slider" oninput="setVolume(this.value)">
+        <button class="btn btn-ghost btn-sm" onclick="cycleSpeed()" id="speed-btn" style="font-family:var(--font-mono);min-width:36px">1×</button>
+      </div>
+    </div>
+  </div><!-- /main -->
+
+  <!-- RIGHT PANEL -->
+  <div id="right-panel">
+    <div class="right-section" id="rp-project">
+      <div class="right-section-title">Project Info</div>
+      <div class="info-grid">
+        <div class="info-row"><span class="key">Title</span><span class="val" style="font-family:var(--font-body);font-size:.72rem;max-width:140px;text-align:right;line-height:1.3">Ep. 47</span></div>
+        <div class="info-row"><span class="key">Duration</span><span class="val">24:37</span></div>
+        <div class="info-row"><span class="key">Format</span><span class="val">MP3</span></div>
+        <div class="info-row"><span class="key">Words</span><span class="val">3,842</span></div>
+        <div class="info-row"><span class="key">Created</span><span class="val" style="font-family:var(--font-body);font-size:.72rem">Today</span></div>
+      </div>
+    </div>
+    <div class="sep"></div>
+    <div class="right-section" id="rp-stats">
+      <div class="right-section-title">Outputs Ready</div>
+      <div class="grid2">
+        <div class="stat-box"><span class="stat-val">5</span><div class="stat-label">Clips</div></div>
+        <div class="stat-box"><span class="stat-val">5</span><div class="stat-label">Social Posts</div></div>
+        <div class="stat-box"><span class="stat-val">3</span><div class="stat-label">Audiograms</div></div>
+        <div class="stat-box"><span class="stat-val">6</span><div class="stat-label">Languages</div></div>
+      </div>
+    </div>
+    <div class="sep"></div>
+    <div id="rp-contextual">
+      <!-- Updated per tab -->
+    </div>
+    <div class="sep"></div>
+    <div class="right-section">
+      <div class="right-section-title">Quick Actions</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="switchTab('clips')">✂ Generate More Clips</button>
+        <button class="btn btn-ghost btn-sm" onclick="switchTab('audiograms')">🎨 Edit Audiogram</button>
+        <button class="btn btn-ghost btn-sm" onclick="switchTab('export')">⬇ Export All</button>
+      </div>
+    </div>
+  </div><!-- /right-panel -->
+
+</div><!-- /layout -->
+
+<!-- SETTINGS MODAL (Phase 2) -->
+<div class="modal-overlay" id="settings-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">⚙ Settings</div>
+      <div class="modal-close" onclick="closeSettings()">✕</div>
+    </div>
+    <div class="settings-section-title">🔑 API Keys</div>
+    <div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:8px;border-bottom:1px solid var(--border);padding-bottom:14px">
+      <div style="width:100%">
+        <div class="settings-label">Anthropic API Key</div>
+        <div class="settings-hint" style="margin-bottom:7px">Powers AI social copy generation via Claude</div>
+        <div class="api-key-wrap">
+          <input type="password" id="setting-anthropic-key" placeholder="sk-ant-api03-…" autocomplete="off" style="flex:1">
+          <button class="key-toggle" onclick="toggleKeyVis('setting-anthropic-key',this)">Show</button>
+          <button class="key-toggle" style="background:var(--gold);color:#0a0810;border:none;font-weight:700" onclick="saveApiKey('anthropic')">Save</button>
+          <button class="key-toggle" onclick="testApiKey('anthropic')" id="test-anthropic-btn">Test</button>
+        </div>
+        <div class="key-status" id="anthropic-key-status"></div>
+        <div id="anthropic-test-result" style="display:none;margin-top:6px;font-size:.72rem;padding:6px 10px;border-radius:7px"></div>
+      </div>
+    </div>
+    <div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:8px">
+      <div style="width:100%">
+        <div class="settings-label">OpenAI API Key</div>
+        <div class="settings-hint" style="margin-bottom:7px">Powers Whisper speech-to-text transcription</div>
+        <div class="api-key-wrap">
+          <input type="password" id="setting-openai-key" placeholder="sk-proj-…" autocomplete="off" style="flex:1">
+          <button class="key-toggle" onclick="toggleKeyVis('setting-openai-key',this)">Show</button>
+          <button class="key-toggle" style="background:var(--gold);color:#0a0810;border:none;font-weight:700" onclick="saveApiKey('openai')">Save</button>
+          <button class="key-toggle" onclick="testApiKey('openai')" id="test-openai-btn">Test</button>
+        </div>
+        <div class="key-status" id="openai-key-status"></div>
+        <div id="openai-test-result" style="display:none;margin-top:6px;font-size:.72rem;padding:6px 10px;border-radius:7px"></div>
+        <div style="margin-top:8px;padding:8px 10px;background:rgba(232,184,75,.06);border:1px solid rgba(232,184,75,.15);border-radius:8px;font-size:.72rem;color:var(--text3);line-height:1.6">
+          💡 <strong style="color:var(--text2)">If you see quota errors after adding credits:</strong><br>
+          1. Go to <strong>platform.openai.com → Settings → Limits</strong><br>
+          2. Set a monthly <strong>Usage limit</strong> (defaults to $0 even after funding)<br>
+          3. Create a <strong>new API key</strong> — old keys sometimes stay on free tier
+        </div>
+      </div>
+    </div>
+    <div class="settings-section-title" style="margin-top:6px">⚙ General</div>
+    <div class="settings-row">
+      <div><div class="settings-label">Default Export Resolution</div><div class="settings-hint">For video clip exports</div></div>
+      <select id="setting-resolution" style="width:120px"><option>1080p</option><option selected>720p</option><option>480p</option></select>
+    </div>
+    <div class="settings-row">
+      <div><div class="settings-label">Default Caption Style</div><div class="settings-hint">Applied to audiograms</div></div>
+      <select id="setting-caption-style" style="width:120px"><option>Clean</option><option selected>Bold Social</option><option>Karaoke</option><option>Minimal</option></select>
+    </div>
+    <div class="settings-row">
+      <div><div class="settings-label">Brand Color</div><div class="settings-hint">Used in audiograms</div></div>
+      <input type="color" id="setting-brand-color" value="#e8b84b">
+    </div>
+    <div class="settings-row">
+      <div><div class="settings-label">Auto-clip Length</div><div class="settings-hint">Default target</div></div>
+      <select id="setting-clip-length" style="width:120px"><option>15s</option><option selected>30s</option><option>60s</option></select>
+    </div>
+    <div class="settings-row">
+      <div><div class="settings-label">Auto-save Projects</div><div class="settings-hint">Save to localStorage</div></div>
+      <div class="toggle on" id="setting-autosave" onclick="this.classList.toggle('on')"></div>
+    </div>
+    <div style="margin-top:20px;display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn btn-ghost" onclick="closeSettings()">Cancel</button>
+      <button class="btn btn-gold" onclick="saveSettings()">Save Settings</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   MOCK DATA
+══════════════════════════════════════════════════════════════ */
+const TRANSCRIPT = [
+  {t:'0:00',e:'0:38',text:"Welcome back to The Creator Playbook. I'm your host, Marcus Reid, and today we're diving into something I get asked about constantly — how do you actually build a lasting audience when every platform's algorithm changes overnight?"},
+  {t:'0:38',e:'1:15',text:"The short answer? You stop playing the algorithm's game and start building something the algorithm can't take away. Your email list, your community, your brand voice. These are assets you own."},
+  {t:'1:15',e:'1:52',text:"I spent three years chasing viral moments. Three years of late nights editing, posting at weird hours, analyzing every metric. And you know what I learned? Consistency beats virality every single time."},
+  {t:'1:52',e:'2:31',text:"Let me give you a framework that changed everything for me. It's called the Content Pyramid. At the top you have your long-form content — your podcast, your YouTube videos, your blog. That's the foundation."},
+  {t:'2:31',e:'3:08',text:"From each piece of long-form content, you extract five to seven short-form pieces. TikToks, Reels, Shorts. These drive discovery. They're the top of your funnel."},
+  {t:'3:08',e:'3:52',text:"And here's the piece most creators miss — your newsletter sits at the bottom of that pyramid. It converts your audience from renters to owners. When you have someone's email, you have a direct line that no algorithm can cut."},
+  {t:'3:52',e:'4:33',text:"Now I know what you're thinking — 'Marcus, I'm already overwhelmed. I can't add a newsletter on top of everything else.' And that's exactly why I started using tools to repurpose my content automatically."},
+  {t:'4:33',e:'5:18',text:"Record once, publish everywhere. That's the mantra now. One podcast episode becomes five clips, three audiograms, a newsletter draft, social captions for every platform. One hour of recording turns into a week of content."},
+  {t:'5:18',e:'6:02',text:"Let's talk about monetization, because this is where it gets real. Most creators think about monetization too late. They build an audience first and then figure out how to make money. That's backwards."},
+  {t:'6:02',e:'6:45',text:"You should know your monetization model before you record episode one. Are you building toward sponsorships? Digital products? Coaching? A community membership? Each model requires a different content strategy."},
+  {t:'6:45',e:'7:28',text:"Sponsorships are the most common path, but they're also the most volatile. I've had brand deals fall through at the last minute, budgets cut, contracts canceled. It happens. Diversify early."},
+  {t:'7:28',e:'8:12',text:"Digital products — courses, templates, toolkits — these have been a game changer for me. Once you build it, it sells while you sleep. The leverage is incredible. My first course made more in its first month than three months of sponsorship income."},
+  {t:'8:12',e:'8:56',text:"Here's my hot take on audience size: you don't need a million followers to build a sustainable creator business. You need a thousand true fans. If a thousand people each pay you a hundred dollars a year, that's a six-figure income."},
+  {t:'8:56',e:'9:40',text:"The math works at every scale. Focus on depth over width. I'd take five hundred deeply engaged subscribers over fifty thousand passive followers any day of the week."},
+  {t:'9:40',e:'10:25',text:"Now let's get tactical. Your posting frequency matters, but consistency matters more. I'd rather you post once a week every week than three times one week and nothing the next three weeks."},
+  {t:'10:25',e:'11:10',text:"Pick a schedule you can maintain sustainably. Then stick to it for six months before you change anything. I see so many creators pivot too early, before the data is even statistically meaningful."},
+  {t:'11:10',e:'11:55',text:"Six months, minimum. That's how long it takes the algorithm to understand your content, for your audience to develop a habit of consuming your work, and for you to get good at this."},
+  {t:'11:55',e:'12:40',text:"Here's something nobody talks about — the quality of your first hundred episodes matters less than you think. What matters is that you made them. The reps, the practice, the iteration."},
+  {t:'12:40',e:'13:24',text:"My first twenty episodes were honestly kind of rough. The audio quality was mediocre, the structure was loose. But I learned something from every single one. And my audience grew with me."},
+  {t:'13:24',e:'14:08',text:"Your early adopters are the most valuable people in your creator ecosystem. Treat them like VIPs. Respond to every comment. Ask for their feedback. Make them feel like they're part of building something."},
+  {t:'14:08',e:'14:55',text:"Alright, let's talk about the content machine. Most creators are reactive — they create when inspired, post when they feel like it. I want you to become proactive. Build a content system that runs whether you're inspired or not."},
+  {t:'14:55',e:'15:40',text:"Block time every week for content creation. I do three hours on Monday mornings — that's my recording block. Then Tuesday afternoon I do editing and scheduling. That's it. Six to eight hours total, everything planned for the week."},
+  {t:'15:40',e:'16:28',text:"And the final thing I want to leave you with today — play the long game. I know that's not what the get-rich-quick crowd wants to hear. But the creators who are still here in five years? They're the ones who built slowly and built right."},
+  {t:'16:28',e:'17:10',text:"Thank you for listening to The Creator Playbook. If you got value from this episode, share it with one other creator who needs to hear it. That's how we grow this community. I'll see you in the next one."}
+];
+
+const CLIPS = [
+  {id:1,title:"Consistency Beats Virality",start:"1:15",end:"1:52",score:94,tags:["Strong Hook","Quote Moment"],text:"I spent three years chasing viral moments. And you know what I learned? Consistency beats virality every single time.",fav:true},
+  {id:2,title:"The Content Pyramid Framework",start:"1:52",end:"3:52",score:87,tags:["Educational Nugget","Strong Hook"],text:"Let me give you a framework that changed everything for me — the Content Pyramid. Long-form at the base, short-form for discovery, newsletter at the bottom converting renters to owners.",fav:false},
+  {id:3,title:"Record Once, Publish Everywhere",start:"4:33",end:"5:18",score:91,tags:["High Energy","Quote Moment"],text:"Record once, publish everywhere. One podcast episode becomes five clips, three audiograms, a newsletter draft, social captions for every platform.",fav:true},
+  {id:4,title:"1,000 True Fans Math",start:"8:12",end:"9:40",score:96,tags:["Strong Hook","Educational Nugget","High Energy"],text:"You don't need a million followers. You need a thousand true fans. If a thousand people each pay you a hundred dollars a year, that's a six-figure income.",fav:true},
+  {id:5,title:"Play the Long Game",start:"15:40",end:"16:28",score:82,tags:["Story Beat","Educational Nugget"],text:"The creators who are still here in five years are the ones who built slowly and built right. Play the long game.",fav:false}
+];
+
+const SOCIAL_COPY = {
+  tiktok:{
+    icon:"🎵",color:"#ff2d55",bg:"rgba(255,45,85,.12)",
+    platform:"TikTok",handle:"@creatorplaybook",
+    casual:"POV: you've been chasing the algorithm for 3 years and STILL not growing 😅\n\nMarcus Reid dropped the truth bomb on episode 47 👇\n\n\"Consistency beats virality every single time.\"\n\nThis whole episode is a masterclass. Link in bio 🔗",
+    viral:"Stop trying to go viral. Seriously.\n\n✅ Build your email list\n✅ Own your audience\n✅ Post consistently for 6 months\n✅ THEN watch what happens\n\nMarcus built a 6-figure creator biz with 1,000 true fans. Ep 47 👆",
+    professional:"5 frameworks every creator needs in 2025 — Episode 47 breakdown:\n\n1. Content Pyramid (long → short → email)\n2. 1,000 True Fans model\n3. Record Once, Publish Everywhere\n4. 6-month consistency rule\n5. Monetize before you post ep. 1\n\nFull episode linked in bio.",
+    bold:"THE ALGORITHM IS LYING TO YOU. 🚨\n\nYou don't need viral. You need OWNED.\n\nEp 47 of The Creator Playbook = required listening for every serious creator in 2025.",
+    educational:"Creator economy breakdown 📊\n\nThe math no one talks about:\n1,000 fans × $100/year = $100K revenue\n\nYou don't need millions of followers. You need depth, not width.\n\nFull episode in bio — the content pyramid strategy is 🔥",
+    tags:["#CreatorEconomy","#ContentCreator","#GrowOnTikTok","#CreatorTips","#ContentStrategy","#BuildYourBrand"]
+  },
+  instagram:{
+    icon:"📸",color:"#e1306c",bg:"rgba(225,48,108,.12)",
+    platform:"Instagram",handle:"@creatorplaybook",
+    casual:"The episode that changed how I think about building an audience 🙌\n\nMarcus Reid (@marcusreid) just dropped a banger — Episode 47 of The Creator Playbook is essential listening for every creator trying to figure out this game.\n\nSave this for later. You're going to want to come back to it. 📌\n\n—\n🎙 Listen via link in bio",
+    viral:"\"Record once. Publish everywhere.\"\n\nThis is the creator system that turns 1 hour of recording into a WEEK of content across every platform.\n\nOne pod episode → 5 clips + 3 audiograms + newsletter draft + social captions\n\nEp 47 is a masterclass. Link in bio 👆",
+    professional:"Building a sustainable creator business in 2025 requires strategy, not just content volume.\n\nIn Episode 47, Marcus Reid breaks down the frameworks that helped him build a six-figure creator business — and none of them involve going viral.\n\n📌 Save this post if you're building a creator business\n🔗 Full episode: link in bio",
+    bold:"Most creators are building on rented land. 🏚\n\nInstagram can ban you. TikTok can disappear. YouTube can demonetize you.\n\nBut your email list? That's yours.\n\nEpisode 47 changed how I think about audience ownership. 🔗 Bio.",
+    educational:"The Content Pyramid explained:\n\n🔺 Top: Long-form (podcast/YouTube) → Discovery\n🔷 Middle: Short-form clips → Reach\n📩 Bottom: Newsletter → Ownership\n\nMost creators skip the bottom layer. That's the mistake.\n\nFull breakdown in Ep 47 — link in bio 🎙",
+    tags:["#CreatorEconomy","#PodcastLife","#ContentStrategy","#Entrepreneurship","#CreatorTips","#BuildYourBrand","#AudienceGrowth"]
+  },
+  twitter:{
+    icon:"𝕏",color:"#fff",bg:"rgba(255,255,255,.06)",
+    platform:"X / Twitter",handle:"@creatorplaybook",
+    casual:"3 years of chasing virality.\n\nThen Marcus Reid said \"consistency beats virality every single time\" and something clicked.\n\nNew ep of The Creator Playbook hits different.",
+    viral:"Creator math that breaks people's brains:\n\n1,000 fans × $100/year = $100,000\n\nYou don't need millions of followers.\nYou need 1,000 true fans.\n\nMarcus breaks this down in ep 47 🔗",
+    bold:"Hot take: going viral is a distraction.\n\nBuilding an owned audience is the play.\n\nEp 47 of The Creator Playbook. No fluff, just frameworks.",
+    professional:"The most sustainable creator businesses I've seen share one trait:\n\nThey treat their audience as an asset, not a metric.\n\nEmail list > follower count.\n\nMarcus Reid on ep 47 🎙",
+    educational:"The Content Pyramid framework (save this):\n\n1. Create one piece of long-form content\n2. Extract 5-7 short-form clips\n3. Convert audience to email via newsletter\n\nOwn your distribution. Don't rent it.\n\n— Ep 47 @thecreatorpor",
+    tags:["#CreatorEconomy","#ContentStrategy","#Podcasting","#IndieCreator"]
+  },
+  youtube:{
+    icon:"▶",color:"#ff0000",bg:"rgba(255,0,0,.1)",
+    platform:"YouTube Shorts",handle:"@creatorplaybook",
+    casual:"This 45 second clip from Episode 47 might be the most important thing I've posted all year. Marcus Reid breaks down exactly why consistency beats virality — and the framework he used to build a 6-figure creator business with under 50K followers.",
+    viral:"The creator business model most people get completely wrong — and the simple math that fixes it. Episode 47 of The Creator Playbook.",
+    bold:"1,000 true fans. $100 each. Six-figure creator business. Episode 47 breaks down the math. Subscribe for weekly creator strategy.",
+    professional:"Episode 47: Building a sustainable creator business in 2025. Content pyramid framework, 1000 true fans model, monetization strategy, and the 6-month consistency rule. Full episode available on all podcast platforms.",
+    educational:"What the Content Pyramid is, how it works, and why 90% of creators skip the most important layer (hint: it's the newsletter). Timestamps in the comments. Episode 47 of The Creator Playbook.",
+    tags:["creatoreconomy","contentcreator","youtubeshorts","podcastclips","creatorstrategy","growonyoutube"]
+  },
+  linkedin:{
+    icon:"in",color:"#0077b5",bg:"rgba(0,119,181,.1)",
+    platform:"LinkedIn",handle:"Marcus Reid",
+    casual:"Three years ago, I was obsessing over every algorithm update.\n\nToday, I barely think about the algorithm.\n\nThe shift? I stopped building on rented land and started owning my distribution.\n\nIn Episode 47 of The Creator Playbook, I share the exact framework I used — the Content Pyramid — that turned my creator business from algorithm-dependent to algorithm-proof.\n\n→ Long-form content is your foundation\n→ Short-form clips drive discovery\n→ Your email newsletter is the real asset\n\nIf you're building any kind of content business, this episode is worth your time.\n\n🎙 Link in comments",
+    professional:"The creator economy is maturing rapidly. The strategies that worked in 2021 don't work the same way in 2025.\n\nIn Episode 47 of The Creator Playbook, I discuss:\n\n• Why audience ownership trumps follower count\n• The Content Pyramid framework for sustainable content systems\n• How the 1,000 True Fans model applies to B2B creators\n• Monetization strategy before you record episode one\n\nThree frameworks, one episode. Relevant for any professional building a content presence.\n\n#ContentStrategy #CreatorEconomy #PersonalBranding",
+    bold:"Unpopular opinion: chasing virality is a waste of time for 95% of creators.\n\nI said what I said.\n\nHere's the math that actually works:\n1,000 deeply engaged fans > 1,000,000 passive followers\n\nEpisode 47 of The Creator Playbook. I break down how to build the former.",
+    viral:"The framework that took me from stressed creator to sustainable business owner:\n\nRecord once. Publish everywhere.\n\nOne recording session → 5 clips → 3 audiograms → newsletter → social captions for every platform.\n\nThis changed everything. Sharing the full system in Episode 47.\n\n💬 What's your current content workflow? Drop it in the comments.",
+    educational:"Understanding the Creator Pyramid (and why most skip the most important layer):\n\nTop layer: Long-form content (podcast, video, blog)\n→ This is your authority and depth\n\nMiddle layer: Short-form repurposing\n→ This is your reach and discovery\n\nBottom layer: Email newsletter\n→ This is your owned asset\n\nMost creators focus on the top and middle. The ones who build lasting businesses invest in the bottom.\n\nEpisode 47 dives deep. Link in comments.",
+    tags:["#CreatorEconomy","#ContentStrategy","#PersonalBranding","#DigitalMarketing","#Entrepreneurship","#Podcasting"]
+  }
+};
+
+const TRANSLATIONS = {
+  es:{name:"Spanish",flag:"🇪🇸",
+    rows:[
+      {t:"0:00",orig:"Welcome back to The Creator Playbook.",trans:"Bienvenido de vuelta a The Creator Playbook."},
+      {t:"0:38",orig:"You stop playing the algorithm's game.",trans:"Dejas de jugar al juego del algoritmo."},
+      {t:"1:15",orig:"Consistency beats virality every single time.",trans:"La constancia supera la viralidad en todos los casos."},
+      {t:"1:52",orig:"Let me give you a framework that changed everything.",trans:"Déjame darte un marco de trabajo que cambió todo."},
+      {t:"2:31",orig:"From each piece of long-form content, extract five to seven short-form pieces.",trans:"De cada contenido de formato largo, extrae cinco a siete piezas cortas."},
+      {t:"4:33",orig:"Record once, publish everywhere.",trans:"Graba una vez, publica en todas partes."},
+      {t:"8:12",orig:"You don't need a million followers. You need a thousand true fans.",trans:"No necesitas un millón de seguidores. Necesitas mil fanáticos verdaderos."}
+    ]
+  },
+  fr:{name:"French",flag:"🇫🇷",
+    rows:[
+      {t:"0:00",orig:"Welcome back to The Creator Playbook.",trans:"Bienvenue dans The Creator Playbook."},
+      {t:"0:38",orig:"You stop playing the algorithm's game.",trans:"Vous arrêtez de jouer au jeu de l'algorithme."},
+      {t:"1:15",orig:"Consistency beats virality every single time.",trans:"La régularité bat la viralité à chaque fois."},
+      {t:"1:52",orig:"Let me give you a framework that changed everything.",trans:"Laissez-moi vous donner un cadre qui a tout changé."},
+      {t:"4:33",orig:"Record once, publish everywhere.",trans:"Enregistrez une fois, publiez partout."},
+      {t:"8:12",orig:"You don't need a million followers.",trans:"Vous n'avez pas besoin d'un million d'abonnés."}
+    ]
+  },
+  de:{name:"German",flag:"🇩🇪",
+    rows:[
+      {t:"0:00",orig:"Welcome back to The Creator Playbook.",trans:"Willkommen zurück beim Creator Playbook."},
+      {t:"1:15",orig:"Consistency beats virality every single time.",trans:"Konsistenz schlägt Viralität jedes Mal."},
+      {t:"4:33",orig:"Record once, publish everywhere.",trans:"Einmal aufnehmen, überall veröffentlichen."},
+      {t:"8:12",orig:"You don't need a million followers.",trans:"Du brauchst keine Million Follower."}
+    ]
+  },
+  pt:{name:"Portuguese",flag:"🇧🇷",
+    rows:[
+      {t:"0:00",orig:"Welcome back to The Creator Playbook.",trans:"Bem-vindo de volta ao Creator Playbook."},
+      {t:"1:15",orig:"Consistency beats virality every single time.",trans:"A consistência supera a viralidade todas as vezes."},
+      {t:"4:33",orig:"Record once, publish everywhere.",trans:"Grave uma vez, publique em todo lugar."},
+      {t:"8:12",orig:"You don't need a million followers.",trans:"Você não precisa de um milhão de seguidores."}
+    ]
+  },
+  ja:{name:"Japanese",flag:"🇯🇵",
+    rows:[
+      {t:"0:00",orig:"Welcome back to The Creator Playbook.",trans:"クリエイタープレイブックへようこそ。"},
+      {t:"1:15",orig:"Consistency beats virality every single time.",trans:"継続性は常にバイラル性を上回ります。"},
+      {t:"4:33",orig:"Record once, publish everywhere.",trans:"一度録音して、どこにでも公開する。"},
+      {t:"8:12",orig:"You don't need a million followers.",trans:"百万人のフォロワーは必要ありません。"}
+    ]
+  },
+  ko:{name:"Korean",flag:"🇰🇷",
+    rows:[
+      {t:"0:00",orig:"Welcome back to The Creator Playbook.",trans:"크리에이터 플레이북에 오신 것을 환영합니다."},
+      {t:"1:15",orig:"Consistency beats virality every single time.",trans:"일관성은 항상 바이럴리티를 이깁니다."},
+      {t:"4:33",orig:"Record once, publish everywhere.",trans:"한 번 녹음하고 어디에나 게시하세요."},
+      {t:"8:12",orig:"You don't need a million followers.",trans:"백만 명의 팔로워가 필요하지 않습니다."}
+    ]
+  }
+};
+
+const VOICE_STYLES=[
+  {id:'natural',name:'Natural',desc:'Conversational, warm flow'},
+  {id:'energetic',name:'Energetic',desc:'Punchy, high-tempo delivery'},
+  {id:'cinematic',name:'Cinematic',desc:'Deep, dramatic presence'},
+  {id:'narrator',name:'Narrator',desc:'Professional documentary tone'}
+];
+
+const EXPORT_CARDS=[
+  {icon:'🎬',bg:'rgba(124,111,205,.15)',name:'Video Clip',desc:'Export clips as standalone MP4 with optional captions overlaid.',formats:['MP4','MOV','WebM'],qualities:['1080p','720p','480p']},
+  {icon:'🎵',bg:'rgba(232,184,75,.12)',name:'Audiogram',desc:'Animated waveform post with captions. Ready for social upload.',formats:['MP4','GIF'],qualities:['1080p','720p','Square']},
+  {icon:'📄',bg:'rgba(62,207,178,.12)',name:'Subtitle File',desc:'Timestamped captions for your video editor or streaming platform.',formats:['SRT','VTT','ASS'],qualities:['Full Transcript','Clips Only']},
+  {icon:'📝',bg:'rgba(240,92,110,.1)',name:'Transcript',desc:'Clean text export of the full transcript with timestamps.',formats:['TXT','DOCX','PDF'],qualities:['With Timestamps','Clean Text']},
+  {icon:'📱',bg:'rgba(0,119,181,.1)',name:'Social Copy Pack',desc:'All platform captions bundled in one file for easy copy-paste.',formats:['TXT','CSV','Notion'],qualities:['All Platforms','Selected Only']},
+  {icon:'🌐',bg:'rgba(62,217,138,.1)',name:'Translation Package',desc:'Translated transcript and voiceover-ready scripts for all selected languages.',formats:['TXT','SRT','DOCX'],qualities:['All Languages','Spanish Only']}
+];
+
+/* ══════════════════════════════════════════════════════════════
+   APP STATE
+══════════════════════════════════════════════════════════════ */
+const state = {
+  tab:'upload',
+  projectLoaded:true,
+  isPlaying:false,
+  currentTime:0,
+  duration:1477, // 24:37 in seconds
+  volume:80,
+  speed:1,
+  speeds:[0.75,1,1.25,1.5,2],
+  speedIdx:1,
+  audiogramStyle:'minimal-dark',
+  audiogramRatio:'1:1',
+  captionOn:true,
+  waveOn:true,
+  currentLang:'es',
+  currentVoice:'natural',
+  clipPreset:'15s',
+  clipsFavs:new Set([1,3,4]),
+  clipsRenamed:{},
+  selectedSegments:new Set(),
+  waveData:[],
+  agAnimFrame:null,
+  playerAnimFrame:null,
+};
+
+/* ══════════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════════ */
+window.addEventListener('load',()=>{
+  generateWaveData();
+  renderTranscript();
+  renderClips();
+  renderSocialCards();
+  renderVoiceOptions();
+  renderTranslation();
+  renderExportCards();
+  switchTab('upload');
+  // Blank slate on every launch — upload area shows by default
+  document.getElementById('upload-area').style.display='block';
+  document.getElementById('project-info-card').style.display='none';
+  // Show first-time hint or returning hint
+  const visited=localStorage.getItem('cas_visited');
+  if(!visited){
+    document.getElementById('sample-tip').style.display='block';
+    localStorage.setItem('cas_visited','1');
+  } else {
+    document.getElementById('sample-tip').style.display='none';
+    document.getElementById('returning-tip').style.display='block';
+  }
+  drawPlayerWave();
+  renderAudiogram();
+  startPlayerTick();
+});
+
+/* ── Waveform data ── */
+function generateWaveData(n=200){
+  state.waveData=[];
+  for(let i=0;i<n;i++){
+    const x=i/n;
+    const v=.3+.6*Math.abs(Math.sin(x*30+1.2))*Math.random()+.1*Math.random();
+    state.waveData.push(Math.min(1,v));
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TAB NAVIGATION
+══════════════════════════════════════════════════════════════ */
+function switchTab(tab){
+  state.tab=tab;
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  document.getElementById('nav-'+tab)?.classList.add('active');
+  document.querySelectorAll('[id^=tab-]').forEach(el=>el.style.display='none');
+  document.getElementById('tab-'+tab).style.display='block';
+  updateRightPanel(tab);
+}
+
+function updateRightPanel(tab){
+  const ctx=document.getElementById('rp-contextual');
+  const panels={
+    upload:`<div class="right-section"><div class="right-section-title">Upload Tips</div><div style="display:flex;flex-direction:column;gap:8px;font-size:.75rem;color:var(--text2);line-height:1.5"><div>✓ MP3, WAV, MP4 supported</div><div>✓ Up to 4 hours per file</div><div>✓ Auto-detects language</div><div>✓ Transcription in ~30s</div></div></div>`,
+    transcript:`<div class="right-section"><div class="right-section-title">Subtitle Style</div><div class="form-field"><label class="form-label">Font Style</label><select style="width:100%"><option>Syne Bold</option><option>DM Sans</option><option>Courier</option></select></div><div class="form-field"><label class="form-label">Font Size</label><input type="range" min="12" max="32" value="20"></div><div class="form-field"><label class="form-label">Position</label><select style="width:100%"><option>Bottom</option><option>Center</option><option>Top</option></select></div><div class="form-field"><label class="form-label">Style Preset</label><select style="width:100%"><option>Clean</option><option selected>Bold Social</option><option>Karaoke</option><option>Minimal</option></select></div></div>`,
+    clips:`<div class="right-section"><div class="right-section-title">Clip Settings</div><div class="form-field"><label class="form-label">Min Duration</label><input type="range" min="10" max="30" value="15"></div><div class="form-field"><label class="form-label">Max Duration</label><input type="range" min="30" max="120" value="60"></div><div class="form-field"><label class="form-label">Auto-include captions</label><div class="toggle on" onclick="this.classList.toggle('on')" style="margin-top:6px"></div></div></div>`,
+    audiograms:`<div class="right-section"><div class="right-section-title">Export Settings</div><div class="form-field"><label class="form-label">Frame Rate</label><select style="width:100%"><option>24fps</option><option selected>30fps</option><option>60fps</option></select></div><div class="form-field"><label class="form-label">Duration</label><select style="width:100%"><option selected>Full clip</option><option>15 seconds</option><option>30 seconds</option></select></div></div>`,
+    social:`<div class="right-section"><div class="right-section-title">Copy Settings</div><div class="form-field"><label class="form-label">Include Hashtags</label><div class="toggle on" onclick="this.classList.toggle('on')" style="margin-top:6px"></div></div><div class="form-field"><label class="form-label">Emoji Style</label><select style="width:100%"><option>Moderate</option><option>Minimal</option><option>Heavy</option></select></div></div>`,
+    translation:`<div class="right-section"><div class="right-section-title">Language Settings</div><div class="form-field"><label class="form-label">Formality Level</label><select style="width:100%"><option>Formal</option><option selected>Neutral</option><option>Casual</option></select></div><div class="form-field"><label class="form-label">Regional Variant</label><select style="width:100%"><option selected>Auto-detect</option><option>Latin American</option><option>European</option></select></div></div>`,
+    export:`<div class="right-section"><div class="right-section-title">Batch Export</div><div style="display:flex;flex-direction:column;gap:6px"><button class="btn btn-ghost btn-sm" onclick="toast('Preparing ZIP archive...','info','📦')">Package All as ZIP</button><button class="btn btn-ghost btn-sm" onclick="toast('Export history cleared','success','✓')">Clear Export History</button></div></div>`
+  };
+  ctx.innerHTML=panels[tab]||'';
+}
+
+/* ══════════════════════════════════════════════════════════════
+   UPLOAD HANDLING
+══════════════════════════════════════════════════════════════ */
+function dzDragOver(e){e.preventDefault();document.getElementById('dropzone').classList.add('drag-over')}
+function dzDragLeave(){document.getElementById('dropzone').classList.remove('drag-over')}
+function dzDrop(e){e.preventDefault();dzDragLeave();const f=e.dataTransfer.files[0];if(f)handleFileUpload(f)}
+
+function handleFileUpload(file){
+  if(!file)return;
+  const ext=file.name.split('.').pop().toUpperCase();
+  const allowed=['MP3','WAV','MP4','M4A','AIFF','OGG','WEBM'];
+  if(!allowed.includes(ext)){toast('Unsupported file format. Try MP3, WAV, or MP4.','error','✕');return;}
+  toast('File uploaded successfully!','success','✓');
+  document.getElementById('sample-tip').style.display='none';
+  showProjectCard(false,file);
+}
+
+function showProjectCard(demo, file){
+  document.getElementById('upload-area').style.display='none';
+  document.getElementById('sample-tip').style.display='none';
+  document.getElementById('returning-tip').style.display='none';
+  const card=document.getElementById('project-info-card');
+  card.style.display='flex';
+
+  if(demo){
+    // Demo project — restore demo values
+    document.getElementById('file-name').textContent='the-creator-playbook-ep47.mp3';
+    document.getElementById('file-meta').textContent='MP3 · 24:37 · 34.2 MB';
+    document.getElementById('file-thumb').textContent='🎙';
+    document.getElementById('meta-duration').textContent='24:37';
+    document.getElementById('project-title').value='The Creator Playbook — Episode 47: Building Your Audience in 2025';
+    document.getElementById('sidebar-proj-title').textContent='The Creator Playbook — Ep. 47';
+    document.getElementById('sidebar-proj-title').style.cssText='';
+    document.getElementById('sidebar-proj-meta').innerHTML='<span>🎙 24:37</span><span>📄 5 clips</span>';
+    document.getElementById('sidebar-progress').style.width='62%';
+    document.getElementById('player-title').textContent='The Creator Playbook — Ep. 47';
+    document.getElementById('player-status').textContent='Ready · 24:37';
+    document.getElementById('total-time').textContent='24:37';
+    document.getElementById('ag-title').value='The Creator Playbook';
+    document.getElementById('ag-subtitle').value='Ep. 47 · Building Your Audience in 2025';
+  } else if(file){
+    document.getElementById('file-name').textContent=file.name;
+    const ext=file.name.split('.').pop().toUpperCase();
+    const sizeStr=file.size?(file.size/1024/1024).toFixed(1)+' MB':'—';
+    document.getElementById('file-meta').textContent=`${ext} · ${sizeStr}`;
+    document.getElementById('file-thumb').textContent=ext==='MP4'?'🎬':'🎙';
+    document.getElementById('meta-duration').textContent='—';
+
+    // Derive clean title from filename
+    const cleanTitle=file.name
+      .replace(/\.[^.]+$/,'')
+      .replace(/[-_]+/g,' ')
+      .replace(/\b\w/g,c=>c.toUpperCase())
+      .trim();
+    document.getElementById('project-title').value=cleanTitle;
+    document.getElementById('sidebar-proj-title').textContent=cleanTitle;
+    document.getElementById('sidebar-proj-title').style.cssText='';
+    document.getElementById('sidebar-proj-meta').innerHTML=`<span>🎙 —</span><span>Transcribe to unlock</span>`;
+    document.getElementById('sidebar-progress').style.width='10%';
+    document.getElementById('player-title').textContent=cleanTitle;
+    document.getElementById('player-status').textContent='File loaded · ready to play';
+    document.getElementById('ag-title').value=cleanTitle;
+    document.getElementById('ag-subtitle').value='';
+
+    // Get real duration
+    const url=URL.createObjectURL(file);
+    const audio=new Audio();
+    audio.onloadedmetadata=()=>{
+      const d=audio.duration;
+      const ds=secToTime(d);
+      document.getElementById('meta-duration').textContent=ds;
+      document.getElementById('total-time').textContent=ds;
+      document.getElementById('player-status').textContent=`Ready · ${ds}`;
+      document.getElementById('sidebar-proj-meta').innerHTML=`<span>🎙 ${ds}</span><span>Transcribe to unlock</span>`;
+      state.duration=d;
+      URL.revokeObjectURL(url);
+    };
+    audio.src=url;
+  }
+
+  document.getElementById('transcribe-idle').style.display='flex';
+  document.getElementById('transcribe-loading').style.display='none';
+  document.getElementById('transcribe-done').style.display='none';
+}
+
+function loadDemoProject(){
+  showProjectCard(true);
+  toast('Demo project loaded — explore all tabs','info','🎙');
+}
+
+function newProject(){
+  // Pause any playing audio
+  if(!audioEl.paused){ audioEl.pause(); state.isPlaying=false; document.getElementById('play-btn').textContent='▶'; }
+  state.uploadedFile=null;
+  state.currentTime=0;
+  document.getElementById('upload-area').style.display='block';
+  document.getElementById('project-info-card').style.display='none';
+  document.getElementById('sample-tip').style.display='none';
+  document.getElementById('returning-tip').style.display='block';
+  // Reset sidebar
+  document.getElementById('sidebar-proj-title').textContent='No project loaded';
+  document.getElementById('sidebar-proj-title').style.color='var(--text3)';
+  document.getElementById('sidebar-proj-title').style.fontStyle='italic';
+  document.getElementById('sidebar-proj-meta').innerHTML='<span>Upload a file to begin</span>';
+  document.getElementById('sidebar-progress').style.width='0%';
+  document.getElementById('player-title').textContent='No file loaded';
+  document.getElementById('player-status').textContent='Upload a recording to begin';
+  document.getElementById('current-time').textContent='0:00';
+  document.getElementById('total-time').textContent='0:00';
+  // Reset file input so same file can be re-selected
+  document.getElementById('file-input').value='';
+  switchTab('upload');
+  generateWaveData();
+  drawPlayerWave();
+  state.projectLoaded=false;
+}
+
+function mockRecord(){
+  toast('Browser recording requires microphone access. Feature in beta.','info','🎙');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TRANSCRIPTION SIMULATION
+══════════════════════════════════════════════════════════════ */
+function startTranscribe(){
+  document.getElementById('transcribe-idle').style.display='none';
+  document.getElementById('transcribe-loading').style.display='block';
+  const bar=document.getElementById('transcribe-bar');
+  const label=document.getElementById('transcribe-label');
+  const msgs=['Analyzing audio fingerprint...','Detecting language — English','Transcribing speech to text...','Aligning timestamps...','Identifying segments...','Applying punctuation model...','Finalizing transcript...'];
+  let p=0,mi=0;
+  const iv=setInterval(()=>{
+    p+=Math.random()*14+3;
+    if(p>100)p=100;
+    bar.style.width=p+'%';
+    if(mi<msgs.length-1&&p>mi*13){label.textContent=msgs[mi];mi++}
+    if(p>=100){
+      clearInterval(iv);
+      setTimeout(()=>{
+        document.getElementById('transcribe-loading').style.display='none';
+        document.getElementById('transcribe-done').style.display='block';
+        // If a real file was uploaded, flag the transcript as demo content
+        const isRealFile=!!state.uploadedFile;
+        if(isRealFile){
+          document.getElementById('transcribe-done').innerHTML=`
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(232,184,75,.08);border:1px solid rgba(232,184,75,.2);border-radius:8px">
+                <span style="color:var(--gold)">⚠</span>
+                <span class="text-sm" style="color:var(--text2)">Demo transcript shown — add OpenAI credits to transcribe <em>${state.uploadedFile.name}</em></span>
+                <button class="btn btn-outline-gold btn-sm" onclick="openSettings()">Add Key</button>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <button class="btn btn-ghost btn-sm" onclick="switchTab('transcript')">View Demo Transcript →</button>
+              </div>
+            </div>`;
+          toast('Showing demo transcript — your recording needs Whisper to transcribe','info','⚠');
+        } else {
+          toast('Transcript ready — 24 segments, 3,842 words','success','📄');
+        }
+      },400);
+    }
+  },300);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TRANSCRIPT
+══════════════════════════════════════════════════════════════ */
+function renderTranscript(filter=''){
+  const list=document.getElementById('segment-list');
+  const filt=filter.toLowerCase();
+  list.innerHTML='';
+  TRANSCRIPT.forEach((seg,i)=>{
+    if(filt&&!seg.text.toLowerCase().includes(filt))return;
+    const active=timeToSec(seg.t)<=state.currentTime&&state.currentTime<timeToSec(seg.e);
+    const sel=state.selectedSegments.has(i);
+    const div=document.createElement('div');
+    div.className=`segment${active?' active':''}${sel?' selected':''}`;
+    div.id=`seg-${i}`;
+    const hl=filter?seg.text.replace(new RegExp(`(${escRx(filter)})`, 'gi'),'<mark style="background:var(--gold-dim);color:var(--gold);border-radius:3px">$1</mark>'):seg.text;
+    div.innerHTML=`
+      <input type="checkbox" style="display:none" id="chk-${i}" ${sel?'checked':''} onchange="toggleSeg(${i})">
+      <div class="seg-check" onclick="toggleSeg(${i})">
+        <input type="checkbox" ${sel?'checked':''} style="accent-color:var(--gold);cursor:pointer;width:14px;height:14px">
+      </div>
+      <div class="seg-time">${seg.t}</div>
+      <div class="seg-text" onclick="seekToSeg(${i})">${hl}</div>
+    `;
+    list.appendChild(div);
+  });
+}
+function escRx(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}
+function filterTranscript(v){renderTranscript(v)}
+function toggleSeg(i){
+  if(state.selectedSegments.has(i))state.selectedSegments.delete(i);
+  else state.selectedSegments.add(i);
+  renderTranscript(document.getElementById('transcript-search').value);
+}
+function selectAllSegments(){TRANSCRIPT.forEach((_,i)=>state.selectedSegments.add(i));renderTranscript()}
+function deselectAllSegments(){state.selectedSegments.clear();renderTranscript()}
+function seekToSeg(i){const s=TRANSCRIPT[i];state.currentTime=timeToSec(s.t);updateScrubber();renderTranscript()}
+function clipFromSelected(){
+  if(state.selectedSegments.size===0){toast('Select transcript segments first','info','ℹ');return}
+  toast(`Clip created from ${state.selectedSegments.size} segments!`,'success','✂');
+  deselectAllSegments();
+  switchTab('clips');
+}
+function exportSRT(){
+  let srt='';
+  TRANSCRIPT.forEach((seg,i)=>{
+    srt+=`${i+1}\n${toSRTTime(timeToSec(seg.t))} --> ${toSRTTime(timeToSec(seg.e))}\n${seg.text}\n\n`;
+  });
+  downloadFile(srt,'transcript.srt','text/plain');
+  toast('transcript.srt downloaded','success','↓');
+}
+function exportVTT(){
+  let vtt='WEBVTT\n\n';
+  TRANSCRIPT.forEach((seg,i)=>{
+    vtt+=`${i+1}\n${toVTTTime(timeToSec(seg.t))} --> ${toVTTTime(timeToSec(seg.e))}\n${seg.text}\n\n`;
+  });
+  downloadFile(vtt,'transcript.vtt','text/vtt');
+  toast('transcript.vtt downloaded','success','↓');
+}
+function exportTXT(){
+  const txt=TRANSCRIPT.map(seg=>`[${seg.t}]  ${seg.text}`).join('\n\n');
+  downloadFile(txt,'transcript.txt','text/plain');
+  toast('transcript.txt downloaded','success','↓');
+}
+function exportSocialPack(){
+  const tone=document.getElementById('global-tone')?.value||'casual';
+  let out='CREATOR STUDIO — SOCIAL COPY PACK\n'+'='.repeat(50)+'\n\n';
+  const platforms=['tiktok','instagram','twitter','youtube','linkedin'];
+  platforms.forEach(pid=>{
+    const p=SOCIAL_COPY[pid];
+    out+=`[ ${p.platform.toUpperCase()} ]\n${p[tone]||p.casual}\n\nHashtags: ${(p.tags||[]).join(' ')}\n\n${'─'.repeat(50)}\n\n`;
+  });
+  downloadFile(out,'social-copy-pack.txt','text/plain');
+  toast('Social copy pack downloaded','success','↓');
+}
+function exportAudiogram(){
+  const canvas=document.getElementById('audiogram-canvas');
+  // Offer PNG static export
+  canvas.toBlob(blob=>{
+    if(!blob){toast('Export failed — try again','error','✕');return}
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download='audiogram.png';a.click();
+    URL.revokeObjectURL(url);
+    toast('audiogram.png downloaded','success','↓');
+    // Also offer animated WebM if MediaRecorder is available
+    if(window.MediaRecorder){
+      setTimeout(()=>captureAnimatedAudiogram(),200);
+    }
+  },'image/png');
+}
+function captureAnimatedAudiogram(){
+  const canvas=document.getElementById('audiogram-canvas');
+  if(!canvas.captureStream){toast('Animated export not supported in this browser','info','ℹ');return}
+  const mimeType=MediaRecorder.isTypeSupported('video/webm;codecs=vp9')?'video/webm;codecs=vp9':'video/webm';
+  const stream=canvas.captureStream(30);
+  const chunks=[];
+  const rec=new MediaRecorder(stream,{mimeType});
+  rec.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data)};
+  rec.onstop=()=>{
+    const blob=new Blob(chunks,{type:'video/webm'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download='audiogram-animated.webm';a.click();
+    URL.revokeObjectURL(url);
+    toast('audiogram-animated.webm downloaded (5s loop)','success','🎬');
+  };
+  // Make sure animation is running
+  if(!state.agAnimFrame)animateAudiogram();
+  rec.start();
+  toast('Recording 5s animation…','info','⏺');
+  setTimeout(()=>rec.stop(),5000);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CLIPS
+══════════════════════════════════════════════════════════════ */
+function renderClips(){
+  const list=document.getElementById('clips-list');
+  list.innerHTML='';
+  CLIPS.forEach(c=>{
+    const fav=state.clipsFavs.has(c.id);
+    const title=state.clipsRenamed[c.id]||c.title;
+    const div=document.createElement('div');
+    div.className=`clip-card${fav?' favorited':''}`;
+    div.id=`clip-${c.id}`;
+    div.innerHTML=`
+      <div class="clip-header">
+        <div class="clip-num">${String(c.id).padStart(2,'0')}</div>
+        <div class="clip-title-wrap">
+          <div class="clip-title">
+            <input type="text" value="${title}" id="clip-title-${c.id}" onblur="renameClip(${c.id},this.value)" onkeydown="if(event.key==='Enter')this.blur()">
+          </div>
+          <div class="clip-times">${c.start} → ${c.end} &nbsp;·&nbsp; ~${calcDuration(c.start,c.end)}</div>
+        </div>
+        ${fav?'<span title="Favorited" style="color:var(--gold);font-size:1rem">★</span>':''}
+      </div>
+      <div class="clip-tags">${c.tags.map(t=>`<span class="badge ${tagBadge(t)}">${t}</span>`).join('')}</div>
+      <div class="clip-body">${c.text}</div>
+      <div class="clip-score-bar">
+        <div class="score-label">Engagement</div>
+        <div class="score-track"><div class="score-fill" style="width:${c.score}%"></div></div>
+        <div class="score-val">${c.score}%</div>
+      </div>
+      <div class="clip-actions">
+        <button class="btn btn-outline-gold btn-sm" onclick="previewClip(${c.id})">▶ Preview</button>
+        <button class="btn btn-ghost btn-sm" onclick="favClip(${c.id})">
+          ${fav?'★ Unfavorite':'☆ Favorite'}
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="saveClip(${c.id})">✓ Save</button>
+        <button class="btn btn-ghost btn-sm" onclick="exportClip(${c.id})">↓ Export</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteClip(${c.id})">✕</button>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+function tagBadge(t){
+  const m={'Strong Hook':'badge-gold','High Energy':'badge-red','Quote Moment':'badge-accent','Educational Nugget':'badge-teal','Story Beat':'badge-green'};
+  return m[t]||'badge-accent';
+}
+function calcDuration(s,e){
+  const diff=timeToSec(e)-timeToSec(s);
+  return diff<60?`${diff}s`:`${Math.floor(diff/60)}m ${diff%60}s`;
+}
+function previewClip(id){
+  const c=CLIPS.find(x=>x.id===id);
+  state.currentTime=timeToSec(c.start);
+  updateScrubber();
+  toast(`Previewing: ${state.clipsRenamed[id]||c.title}`,'info','▶');
+}
+function favClip(id){
+  if(state.clipsFavs.has(id))state.clipsFavs.delete(id);
+  else{state.clipsFavs.add(id);toast('Added to favorites','success','★')}
+  renderClips();
+}
+function renameClip(id,v){
+  if(v.trim())state.clipsRenamed[id]=v.trim();
+}
+function saveClip(id){toast(`Clip ${id} saved to project`,'success','✓')}
+function exportClip(id){toast(`Exporting clip ${id} as MP4...`,'info','↓')}
+function deleteClip(id){
+  const idx=CLIPS.findIndex(c=>c.id===id);
+  if(idx>-1){CLIPS.splice(idx,1);renderClips();toast('Clip deleted','info','✕')}
+}
+function saveAllClips(){toast('All clips saved to project','success','✓')}
+function setClipPreset(el,p){
+  document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');state.clipPreset=p;
+}
+function generateClips(){
+  const loading=document.getElementById('clips-loading');
+  const list=document.getElementById('clips-list');
+  loading.classList.remove('hidden');list.style.opacity='0.3';
+  const msgs=['Scanning transcript for high-energy moments...','Applying engagement heuristics...','Ranking clip candidates...'];
+  let i=0;
+  const lb=document.getElementById('clips-loading-label');
+  const iv=setInterval(()=>{lb.textContent=msgs[i%msgs.length];i++},900);
+  setTimeout(()=>{
+    clearInterval(iv);
+    loading.classList.add('hidden');
+    list.style.opacity='1';
+    toast('5 clips regenerated with new settings','success','⚡');
+  },3000);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   AUDIOGRAM CANVAS
+══════════════════════════════════════════════════════════════ */
+const AG_STYLES={
+  'minimal-dark':{bg1:'#0a0a0e',bg2:'#1a1a28',wave:'#e8b84b',text:'#f0eff8',sub:'#9896b0'},
+  'neon-pulse':{bg1:'#0d001a',bg2:'#1a0040',wave:'#bf5fff',text:'#ffffff',sub:'#bf5fff'},
+  'podcast-studio':{bg1:'#1a0a00',bg2:'#2d1500',wave:'#e8844b',text:'#fff7f0',sub:'#e8844b'},
+  'bold-gradient':{bg1:'#0a001a',bg2:'#001a2d',wave:'#3ecfb2',text:'#f0fff8',sub:'#3ecfb2'}
+};
+let agPhase=0;
+function renderAudiogram(){
+  const canvas=document.getElementById('audiogram-canvas');
+  const ctx=canvas.getContext('2d');
+  const ratio=state.audiogramRatio;
+  if(ratio==='9:16'){canvas.width=280;canvas.height=420}
+  else if(ratio==='1:1'){canvas.width=320;canvas.height=320}
+  else{canvas.width=400;canvas.height=225}
+  const W=canvas.width,H=canvas.height;
+  const st=AG_STYLES[state.audiogramStyle]||AG_STYLES['minimal-dark'];
+  // Background
+  const grd=ctx.createLinearGradient(0,0,W,H);
+  grd.addColorStop(0,st.bg1);grd.addColorStop(1,st.bg2);
+  ctx.fillStyle=grd;ctx.fillRect(0,0,W,H);
+  // Logo area
+  ctx.fillStyle=st.wave+'33';ctx.beginPath();ctx.arc(W/2,H*.18,H*.09,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=st.wave;ctx.font=`bold ${H*.07}px Syne, sans-serif`;ctx.textAlign='center';
+  ctx.fillText('🎙',W/2,H*.21);
+  // Title
+  ctx.fillStyle=st.text;ctx.font=`700 ${H*.055}px Syne, sans-serif`;ctx.textAlign='center';
+  const title=document.getElementById('ag-title')?.value||'Creator Playbook';
+  ctx.fillText(title.length>22?title.slice(0,22)+'…':title,W/2,H*.34);
+  // Subtitle
+  ctx.fillStyle=st.sub;ctx.font=`400 ${H*.032}px DM Sans, sans-serif`;
+  const sub=document.getElementById('ag-subtitle')?.value||'';
+  ctx.fillText(sub.length>36?sub.slice(0,36)+'…':sub,W/2,H*.4);
+  // Waveform
+  if(state.waveOn){
+    const barsW=W*.75,barsX=(W-barsW)/2;
+    const waveH=H*.12,waveY=H*.56;
+    const bars=Math.floor(barsW/5);
+    for(let i=0;i<bars;i++){
+      const pct=i/bars;
+      const wave=Math.sin(pct*Math.PI*6+agPhase)*0.4+0.6;
+      const dataIdx=Math.floor(pct*(state.waveData.length-1));
+      const amp=state.waveData[dataIdx]*wave;
+      const h2=Math.max(4,amp*waveH);
+      const x=barsX+i*5;
+      const alpha=.5+.5*amp;
+      const color=document.getElementById('ag-color')?.value||st.wave;
+      ctx.fillStyle=color+Math.floor(alpha*255).toString(16).padStart(2,'0');
+      ctx.fillRect(x,waveY-h2/2,3,h2);
+    }
+  }
+  // Caption
+  if(state.captionOn){
+    const caption=(document.getElementById('ag-caption')?.value||'').replace(/^"|"$/g,'');
+    const brandColor=document.getElementById('ag-color')?.value||st.wave;
+    ctx.fillStyle=brandColor+'22';
+    const ch=H*.12,cy=H*.7;
+    ctx.beginPath();ctx.roundRect(W*.08,cy,W*.84,ch,8);ctx.fill();
+    ctx.strokeStyle=brandColor+'44';ctx.lineWidth=1;ctx.stroke();
+    ctx.fillStyle=st.text;ctx.font=`500 ${H*.028}px DM Sans, sans-serif`;ctx.textAlign='center';
+    const words=caption.split(' ');let line='',lines=[];
+    const maxW=W*.75;
+    for(const w of words){
+      const test=line?line+' '+w:w;
+      if(ctx.measureText(test).width>maxW&&line){lines.push(line);line=w}else line=test;
+    }
+    if(line)lines.push(line);
+    lines.slice(0,3).forEach((l,li)=>ctx.fillText(l,W/2,cy+ch*.35+li*H*.033));
+  }
+  // Brand bar at bottom
+  const brandColor2=document.getElementById('ag-color')?.value||st.wave;
+  ctx.fillStyle=brandColor2;ctx.fillRect(0,H*.93,W,H*.02);
+  ctx.fillStyle=st.sub;ctx.font=`400 ${H*.025}px DM Mono, monospace`;ctx.textAlign='center';
+  ctx.fillText('Listen on all platforms · @creatorplaybook',W/2,H*.97);
+}
+
+function animateAudiogram(){
+  agPhase+=0.06;
+  renderAudiogram();
+  state.agAnimFrame=requestAnimationFrame(animateAudiogram);
+}
+function setAudiogramStyle(style,el){
+  document.querySelectorAll('.style-option').forEach(e=>e.classList.remove('active'));
+  el.classList.add('active');state.audiogramStyle=style;renderAudiogram();
+}
+function setRatio(r,el){
+  document.querySelectorAll('.ratio-tab').forEach(e=>e.classList.remove('active'));
+  el.classList.add('active');state.audiogramRatio=r;renderAudiogram();
+}
+function toggleCaption(){
+  state.captionOn=!state.captionOn;
+  document.getElementById('caption-toggle').classList.toggle('on',state.captionOn);
+  renderAudiogram();
+}
+function toggleWave(){
+  state.waveOn=!state.waveOn;
+  document.getElementById('wave-toggle').classList.toggle('on',state.waveOn);
+  if(state.waveOn)animateAudiogram(); else{cancelAnimationFrame(state.agAnimFrame);renderAudiogram()}
+}
+function syncColorHex(){
+  const v=document.getElementById('ag-color-hex').value;
+  if(/^#[0-9a-f]{6}$/i.test(v)){document.getElementById('ag-color').value=v;renderAudiogram()}
+}
+function exportAudiogram(){toast('Exporting audiogram as MP4 (720p)...','info','🎬')}
+// Start animating when audiogram tab is shown
+const origSwitch=switchTab;
+window.switchTab=function(tab){
+  origSwitch(tab);
+  if(tab==='audiograms'){
+    if(state.waveOn&&!state.agAnimFrame)animateAudiogram();
+  } else {
+    if(state.agAnimFrame){cancelAnimationFrame(state.agAnimFrame);state.agAnimFrame=null}
+  }
+};
+
+/* ══════════════════════════════════════════════════════════════
+   SOCIAL COPY
+══════════════════════════════════════════════════════════════ */
+function renderSocialCards(){
+  const list=document.getElementById('social-cards-list');
+  const tone=document.getElementById('global-tone')?.value||'casual';
+  list.innerHTML='';
+  const platforms=['tiktok','instagram','twitter','youtube','linkedin'];
+  platforms.forEach(pid=>{
+    const p=SOCIAL_COPY[pid];
+    const copy=(p[tone]||p.casual).replace(/\n/g,'<br>');
+    const div=document.createElement('div');
+    div.className='social-card';
+    div.innerHTML=`
+      <div class="social-card-header">
+        <div class="platform-icon" style="background:${p.bg}">${p.icon}</div>
+        <div><div class="platform-title">${p.platform}</div><div class="platform-handle">${p.handle}</div></div>
+        <div style="margin-left:auto">
+          <select class="tone-select" onchange="updateCardTone('${pid}',this.value)">
+            <option value="viral">🔥 Viral</option>
+            <option value="professional">💼 Pro</option>
+            <option value="casual" ${tone==='casual'?'selected':''}>😎 Casual</option>
+            <option value="educational">📚 Edu</option>
+            <option value="bold">⚡ Bold</option>
+          </select>
+        </div>
+      </div>
+      <div class="social-copy" id="copy-${pid}" contenteditable="true">${copy}</div>
+      <div class="social-footer">
+        <div class="hashtags">${(p.tags||[]).map(h=>`<span class="hashtag" onclick="addHashtag('${pid}','${h}')">${h}</span>`).join('')}</div>
+        <button class="btn btn-ghost btn-sm" onclick="copyCopy('${pid}')">📋 Copy</button>
+        <button class="btn btn-ghost btn-sm" onclick="regenCopy('${pid}')">⟳</button>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+function updateCardTone(pid,tone){
+  const p=SOCIAL_COPY[pid];
+  const copy=(p[tone]||p.casual).replace(/\n/g,'<br>');
+  document.getElementById(`copy-${pid}`).innerHTML=copy;
+}
+function applyGlobalTone(){renderSocialCards()}
+function copyCopy(pid){
+  const el=document.getElementById(`copy-${pid}`);
+  navigator.clipboard?.writeText(el.innerText).catch(()=>{});
+  toast('Copied to clipboard!','success','📋');
+}
+function regenCopy(pid){
+  const tones=['viral','professional','casual','educational','bold'];
+  const t=tones[Math.floor(Math.random()*tones.length)];
+  updateCardTone(pid,t);
+  toast('Copy regenerated!','success','⟳');
+}
+function regenAllCopy(){renderSocialCards();toast('All copy regenerated!','success','⟳')}
+function addHashtag(pid,h){
+  const el=document.getElementById(`copy-${pid}`);
+  el.innerHTML+=`<br>${h}`;
+  toast(`Added ${h}`,'info','#');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TRANSLATION
+══════════════════════════════════════════════════════════════ */
+function renderVoiceOptions(){
+  const wrap=document.getElementById('voice-options');
+  wrap.innerHTML=VOICE_STYLES.map(v=>`
+    <div class="voice-option${v.id===state.currentVoice?' active':''}" onclick="setVoice('${v.id}',this)">
+      <div class="vname">${v.name}</div>
+      <div class="vdesc">${v.desc}</div>
+    </div>
+  `).join('');
+}
+function setVoice(id,el){
+  state.currentVoice=id;
+  document.querySelectorAll('.voice-option').forEach(e=>e.classList.remove('active'));
+  el.classList.add('active');
+}
+function setLang(code,el){
+  state.currentLang=code;
+  document.querySelectorAll('.lang-card').forEach(e=>e.classList.remove('active'));
+  el.classList.add('active');
+  const t=TRANSLATIONS[code];
+  document.getElementById('trans-lang-label').textContent=t.name;
+  renderTranslation();
+}
+function renderTranslation(){
+  const t=TRANSLATIONS[state.currentLang];
+  const tbody=document.getElementById('translation-body');
+  tbody.innerHTML=(t?.rows||[]).map(r=>`
+    <tr>
+      <td class="td-time">${r.t}</td>
+      <td class="td-orig">${r.orig}</td>
+      <td class="td-trans">${r.trans}</td>
+    </tr>
+  `).join('');
+}
+function generateVoiceover(){
+  toast('Generating voiceover — this may take a moment...','info','🎙');
+  setTimeout(()=>toast('Voiceover ready! Click Export to download.','success','✓'),2500);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   EXPORT
+══════════════════════════════════════════════════════════════ */
+function renderExportCards(){
+  const list=document.getElementById('export-cards');
+  list.innerHTML=EXPORT_CARDS.map(c=>`
+    <div class="export-card">
+      <div class="export-icon" style="background:${c.bg}">${c.icon}</div>
+      <div class="export-info">
+        <div class="export-name">${c.name}</div>
+        <div class="export-desc">${c.desc}</div>
+        <div class="export-controls">
+          <select class="export-select">
+            ${c.formats.map(f=>`<option>${f}</option>`).join('')}
+          </select>
+          <select class="export-select">
+            ${c.qualities.map(q=>`<option>${q}</option>`).join('')}
+          </select>
+          <input type="text" placeholder="${c.name.replace(/\s+/g,'-').toLowerCase()}-01" style="flex:1;min-width:120px">
+        </div>
+      </div>
+      <div class="export-actions">
+        <div class="export-size">~${exportSize(c.name)}</div>
+        <button class="btn btn-gold btn-sm" onclick="doExport('${c.name}')">↓ Export</button>
+      </div>
+    </div>
+  `).join('');
+}
+function exportSize(n){const m={'Video Clip':'84 MB','Audiogram':'12 MB','Subtitle File':'24 KB','Transcript':'48 KB','Social Copy Pack':'8 KB','Translation Package':'120 KB'};return m[n]||'—'}
+function doExport(name){
+  if(name==='Subtitle File'){exportSRT();return}
+  if(name==='Transcript'){exportTXT();return}
+  if(name==='Social Copy Pack'){exportSocialPack();return}
+  if(name==='Audiogram'){exportAudiogram();return}
+  toast(`Preparing ${name} for download…`,'info','↓');
+  setTimeout(()=>toast(`${name} exported successfully!`,'success','✓'),1800);
+}
+function exportAll(){toast('Preparing full export package as ZIP…','info','📦');setTimeout(()=>toast('All assets packaged and ready!','success','✓'),2200)}
+
+/* ══════════════════════════════════════════════════════════════
+   PLAYER — Phase 3: Real Web Audio
+══════════════════════════════════════════════════════════════ */
+const audioEl = new Audio();
+audioEl.preload = 'metadata';
+let audioCtx = null;
+let analyserNode = null;
+let rafId = null;
+
+// Called once a file is uploaded — load into audio element + decode for waveform
+function loadAudioFile(file) {
+  // Release any previous object URL
+  if(state.audioUrl) URL.revokeObjectURL(state.audioUrl);
+  state.audioUrl = URL.createObjectURL(file);
+  audioEl.src = state.audioUrl;
+  audioEl.load();
+  audioEl.playbackRate = state.speed;
+  audioEl.volume = state.volume / 100;
+
+  // Build real waveform via AudioContext decodeAudioData
+  const reader = new FileReader();
+  reader.onload = async e => {
+    try {
+      if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      const buf = await audioCtx.decodeAudioData(e.target.result.slice(0));
+      // Sample the first channel down to ~300 points
+      const ch = buf.getChannelData(0);
+      const pts = 300;
+      const step = Math.floor(ch.length / pts);
+      state.waveData = [];
+      for(let i=0;i<pts;i++){
+        let sum=0;
+        for(let j=0;j<step;j++) sum+=Math.abs(ch[i*step+j]||0);
+        state.waveData.push(Math.min(1, (sum/step)*4)); // scale up for visual impact
+      }
+      drawPlayerWave();
+      toast('Waveform built from audio ✓','success','〰');
+    } catch(err) {
+      console.warn('Waveform decode failed, using generated data:', err);
+      generateWaveData(); // fall back to random
+      drawPlayerWave();
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// Wire audio element events
+audioEl.addEventListener('timeupdate', () => {
+  if(!audioEl.duration) return;
+  state.currentTime = audioEl.currentTime;
+  const pct = (state.currentTime / audioEl.duration) * 100;
+  document.getElementById('scrubber').value = pct;
+  document.getElementById('current-time').textContent = secToTime(state.currentTime);
+  drawPlayerWave();
+  highlightActiveSegment();
+  syncAudiogramCaption();
+});
+
+audioEl.addEventListener('ended', () => {
+  state.isPlaying = false;
+  document.getElementById('play-btn').textContent = '▶';
+  document.getElementById('player-status').textContent = `Ready · ${secToTime(audioEl.duration||state.duration)}`;
+  state.currentTime = 0;
+  document.getElementById('scrubber').value = 0;
+  document.getElementById('current-time').textContent = '0:00';
+  drawPlayerWave();
+});
+
+audioEl.addEventListener('loadedmetadata', () => {
+  const d = audioEl.duration;
+  state.duration = d;
+  document.getElementById('total-time').textContent = secToTime(d);
+  document.getElementById('player-status').textContent = `Ready · ${secToTime(d)}`;
+});
+
+function startPlayerTick(){
+  // No-op — audioEl.timeupdate handles everything now
+}
+
+function togglePlay(){
+  if(!audioEl.src || audioEl.src === window.location.href) {
+    // No real file loaded yet — simulate for demo
+    state.isPlaying = !state.isPlaying;
+    document.getElementById('play-btn').textContent = state.isPlaying ? '⏸' : '▶';
+    document.getElementById('player-status').textContent = state.isPlaying ? 'Playing demo…' : 'Ready · 24:37';
+    if(state.isPlaying) startDemoTick(); else stopDemoTick();
+    return;
+  }
+  // Resume AudioContext if suspended (browser policy)
+  if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  if(audioEl.paused){
+    audioEl.play().then(()=>{
+      state.isPlaying = true;
+      document.getElementById('play-btn').textContent = '⏸';
+      document.getElementById('player-status').textContent = 'Playing…';
+    }).catch(err=>{
+      toast('Playback blocked — click play again','info','▶');
+    });
+  } else {
+    audioEl.pause();
+    state.isPlaying = false;
+    document.getElementById('play-btn').textContent = '▶';
+    document.getElementById('player-status').textContent = `Paused · ${secToTime(audioEl.currentTime)}`;
+  }
+}
+
+// Demo tick for when no real audio is loaded
+let demoTickId = null;
+function startDemoTick(){
+  demoTickId = setInterval(()=>{
+    state.currentTime = Math.min(state.duration, state.currentTime + 0.25);
+    if(state.currentTime >= state.duration){
+      state.currentTime = 0; state.isPlaying = false;
+      stopDemoTick();
+      document.getElementById('play-btn').textContent = '▶';
+      document.getElementById('player-status').textContent = 'Ready · 24:37';
+    }
+    document.getElementById('scrubber').value = (state.currentTime/state.duration)*100;
+    document.getElementById('current-time').textContent = secToTime(state.currentTime);
+    drawPlayerWave();
+    highlightActiveSegment();
+  }, 250);
+}
+function stopDemoTick(){ clearInterval(demoTickId); demoTickId = null; }
+
+function updateScrubber(){
+  const pct=(state.currentTime/state.duration)*100;
+  document.getElementById('scrubber').value=pct;
+  document.getElementById('current-time').textContent=secToTime(state.currentTime);
+  drawPlayerWave();
+}
+
+function scrub(v){
+  const t = (v/100) * (audioEl.duration || state.duration);
+  state.currentTime = t;
+  if(audioEl.duration) audioEl.currentTime = t;
+  highlightActiveSegment();
+  drawPlayerWave();
+}
+
+function setVolume(v){
+  state.volume = v;
+  audioEl.volume = v/100;
+}
+
+function cycleSpeed(){
+  state.speedIdx=(state.speedIdx+1)%state.speeds.length;
+  state.speed=state.speeds[state.speedIdx];
+  audioEl.playbackRate = state.speed;
+  document.getElementById('speed-btn').textContent=state.speed+'×';
+}
+
+function highlightActiveSegment(){
+  if(state.tab!=='transcript')return;
+  TRANSCRIPT.forEach((_,i)=>{
+    const el=document.getElementById(`seg-${i}`);
+    if(!el)return;
+    const seg=TRANSCRIPT[i];
+    const active=timeToSec(seg.t)<=state.currentTime&&state.currentTime<timeToSec(seg.e);
+    el.classList.toggle('active',active);
+    if(active)el.scrollIntoView({block:'nearest',behavior:'smooth'});
+  });
+}
+
+function syncAudiogramCaption(){
+  // Update audiogram caption text from active transcript segment while playing
+  if(!state.waveOn && !state.captionOn) return;
+  const seg = TRANSCRIPT.find(s => timeToSec(s.t)<=state.currentTime && state.currentTime<timeToSec(s.e));
+  if(seg){
+    const capEl = document.getElementById('ag-caption');
+    if(capEl && document.getElementById('caption-toggle')?.classList.contains('on')){
+      // Only auto-sync if audiogram tab is active to avoid jarring the user
+      if(state.tab === 'audiograms') capEl.value = seg.text;
+    }
+  }
+}
+
+function drawPlayerWave(){
+  const canvas=document.getElementById('waveform-canvas');
+  if(!canvas)return;
+  canvas.width=canvas.offsetWidth||600;
+  const ctx2=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  ctx2.clearRect(0,0,W,H);
+  const bars=Math.floor(W/4);
+  const dur = audioEl.duration || state.duration || 1;
+  const progress = state.currentTime / dur;
+  for(let i=0;i<bars;i++){
+    const pct=i/bars;
+    const di=Math.floor(pct*state.waveData.length);
+    const amp=state.waveData[di]||.5;
+    const h2=Math.max(3,amp*(H-6));
+    const x=i*4;
+    const played=pct<=progress;
+    ctx2.fillStyle=played?'#e8b84b':'#2a2a3a';
+    ctx2.beginPath();ctx2.roundRect(x,H/2-h2/2,3,h2,2);ctx2.fill();
+  }
+}
+window.addEventListener('resize',drawPlayerWave);
+
+/* ══════════════════════════════════════════════════════════════
+   SETTINGS MODAL — Phase 2 (localStorage-backed)
+══════════════════════════════════════════════════════════════ */
+function openSettings(){
+  // Populate fields from storage
+  const ak=localStorage.getItem('cas_anthropic_key')||'';
+  const ok=localStorage.getItem('cas_openai_key')||'';
+  const akEl=document.getElementById('setting-anthropic-key');
+  const okEl=document.getElementById('setting-openai-key');
+  if(akEl)akEl.value=ak;
+  if(okEl)okEl.value=ok;
+  updateKeyStatus('anthropic',!!ak);
+  updateKeyStatus('openai',!!ok);
+  document.getElementById('settings-modal').classList.add('open');
+}
+function closeSettings(){document.getElementById('settings-modal').classList.remove('open')}
+function saveSettings(){
+  closeSettings();
+  toast('Settings saved','success','✓');
+}
+function saveApiKey(provider){
+  const id=provider==='anthropic'?'setting-anthropic-key':'setting-openai-key';
+  const val=document.getElementById(id)?.value?.trim();
+  if(!val){toast(`Enter a key first`,'error','✕');return}
+  const storageKey=provider==='anthropic'?'cas_anthropic_key':'cas_openai_key';
+  localStorage.setItem(storageKey,val);
+  updateKeyStatus(provider,true);
+  toast(`${provider==='anthropic'?'Anthropic':'OpenAI'} key saved ✓`,'success','🔑');
+  // Update whisper badge if openai key just set
+  if(provider==='openai')refreshWhisperBadge();
+}
+function updateKeyStatus(provider,isSet){
+  const el=document.getElementById(`${provider}-key-status`);
+  if(!el)return;
+  el.className='key-status '+(isSet?'set':'unset');
+  el.innerHTML=isSet?'● Key saved and active':'○ No key set — using mock mode';
+}
+function toggleKeyVis(inputId,btn){
+  const el=document.getElementById(inputId);
+  if(!el)return;
+  const shown=el.type==='text';
+  el.type=shown?'password':'text';
+  btn.textContent=shown?'Show':'Hide';
+}
+function refreshWhisperBadge(){
+  const el=document.getElementById('whisper-badge');
+  if(!el)return;
+  const hasKey=!!localStorage.getItem('cas_openai_key');
+  el.className='whisper-badge '+(hasKey?'live':'mock');
+  el.textContent=hasKey?'● Whisper Live':'● Mock';
+}
+
+/* ── API Key Test ── */
+async function testApiKey(provider){
+  const inputId = provider==='anthropic' ? 'setting-anthropic-key' : 'setting-openai-key';
+  const resultId = provider==='anthropic' ? 'anthropic-test-result' : 'openai-test-result';
+  const btnId = provider==='anthropic' ? 'test-anthropic-btn' : 'test-openai-btn';
+
+  // Use the field value first, fall back to stored key
+  const fieldVal = document.getElementById(inputId)?.value?.trim();
+  const storedVal = localStorage.getItem(provider==='anthropic'?'cas_anthropic_key':'cas_openai_key');
+  const key = fieldVal || storedVal;
+
+  const resultEl = document.getElementById(resultId);
+  const btn = document.getElementById(btnId);
+
+  if(!key){
+    showTestResult(resultEl, 'error', 'No key found — enter and save a key first.');
+    return;
+  }
+
+  btn.textContent = 'Testing…';
+  btn.disabled = true;
+  resultEl.style.display = 'none';
+
+  try {
+    if(provider === 'anthropic'){
+      // Minimal Claude call — cheapest possible test
+      const res = await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'x-api-key': key,
+          'anthropic-version':'2023-06-01',
+          'anthropic-dangerous-direct-browser-access':'true'
+        },
+        body: JSON.stringify({
+          model:'claude-haiku-4-5-20251001',
+          max_tokens:5,
+          messages:[{role:'user',content:'Hi'}]
+        })
+      });
+      const data = await res.json();
+      if(!res.ok){
+        const msg = data?.error?.message || `Error ${res.status}`;
+        const hint = res.status===401 ? ' — Key is invalid or expired.' :
+                     res.status===429 ? ' — Rate limited or quota exceeded.' : '';
+        showTestResult(resultEl,'error', `✕ Failed (${res.status}): ${msg}${hint}`);
+      } else {
+        showTestResult(resultEl,'success','✓ Anthropic key is valid and working');
+      }
+
+    } else {
+      // OpenAI: call /v1/models — completely free, no quota consumed, just auth check
+      const res = await fetch('https://api.openai.com/v1/models',{
+        headers:{ 'Authorization': `Bearer ${key}` }
+      });
+      const data = await res.json();
+      if(!res.ok){
+        const msg = data?.error?.message || `Error ${res.status}`;
+        const hint = res.status===401 ? ' — Key is invalid or revoked.' :
+                     res.status===429 ? ' — Quota exceeded. Check platform.openai.com → Settings → Limits.' : '';
+        showTestResult(resultEl,'error',`✕ Failed (${res.status}): ${msg}${hint}`);
+      } else {
+        // Key auth is fine — now do a tiny whisper-specific check by listing models
+        const whisperAvail = data.data?.some(m=>m.id.includes('whisper'));
+        showTestResult(resultEl,'success',
+          `✓ OpenAI key valid${whisperAvail?' · Whisper available':' · Note: Whisper model not visible in this org'}`);
+      }
+    }
+  } catch(err) {
+    showTestResult(resultEl,'error',`✕ Network error: ${err.message}`);
+  } finally {
+    btn.textContent = 'Test';
+    btn.disabled = false;
+  }
+}
+
+function showTestResult(el, type, msg){
+  el.style.display = 'block';
+  el.style.background = type==='success' ? 'rgba(62,217,138,.08)' : 'rgba(240,92,110,.08)';
+  el.style.border = `1px solid ${type==='success'?'rgba(62,217,138,.25)':'rgba(240,92,110,.25)'}`;
+  el.style.color = type==='success' ? 'var(--green)' : 'var(--red)';
+  el.textContent = msg;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TOASTS
+══════════════════════════════════════════════════════════════ */
+function toast(msg,type='info',icon='ℹ'){
+  const el=document.createElement('div');
+  el.className=`toast toast-${type}`;
+  el.innerHTML=`<span class="toast-icon">${icon}</span><span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transform='translateX(20px)';el.style.transition='all .3s';setTimeout(()=>el.remove(),300)},2800);
+}
+
+function parseJsonFromText(text){
+  const cleaned=String(text||'').replace(/```(?:json)?/gi,'').replace(/```/g,'').trim();
+  const arrayStart=cleaned.indexOf('['), objectStart=cleaned.indexOf('{');
+  const starts=[arrayStart,objectStart].filter(i=>i>=0);
+  if(!starts.length)throw new Error('No JSON found');
+  const start=Math.min(...starts);
+  const endChar=cleaned[start]==='['?']':'}';
+  const end=cleaned.lastIndexOf(endChar);
+  if(end<=start)throw new Error('Incomplete JSON');
+  return JSON.parse(cleaned.slice(start,end+1));
+}
+
+/* ══════════════════════════════════════════════════════════════
+   UTILS
+══════════════════════════════════════════════════════════════ */
+function timeToSec(t){
+  const p=t.split(':').map(Number);
+  return p.length===2?p[0]*60+p[1]:p[0]*3600+p[1]*60+p[2];
+}
+function secToTime(s){
+  const m=Math.floor(s/60),sec=Math.floor(s%60);
+  return `${m}:${sec.toString().padStart(2,'0')}`;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PHASE 2 — CLAUDE AI SOCIAL COPY GENERATION
+══════════════════════════════════════════════════════════════ */
+async function generateWithClaude(){
+  const key=localStorage.getItem('cas_anthropic_key');
+  if(!key){
+    toast('Add your Anthropic API key in Settings first','error','🔑');
+    openSettings();
+    return;
+  }
+  // Build transcript text (cap at ~3000 chars to stay in budget)
+  const transcriptText=TRANSCRIPT.map(s=>`[${s.t}] ${s.text}`).join('\n').slice(0,3500);
+  const title=document.getElementById('project-title')?.value||'Creator Podcast Episode';
+
+  // Show generating state
+  document.getElementById('ai-generating-indicator').style.display='flex';
+  document.getElementById('claude-gen-btn').disabled=true;
+  document.getElementById('claude-gen-btn').textContent='Generating…';
+
+  const aiLabels=[
+    'Analyzing transcript for key hooks…',
+    'Crafting TikTok & Instagram copy…',
+    'Writing Twitter/X and YouTube…',
+    'Polishing LinkedIn post…',
+    'Applying tone variations…'
+  ];
+  let labelIdx=0;
+  const labelIv=setInterval(()=>{
+    document.getElementById('ai-gen-label').textContent=aiLabels[labelIdx%aiLabels.length];
+    labelIdx++;
+  },1200);
+
+  const systemPrompt=`You are an expert social media copywriter specializing in podcast and creator content. You write platform-native copy that feels authentic, not AI-generated. Keep each piece punchy, platform-appropriate, and varied.`;
+
+  const userPrompt=`Project: "${title}"
+
+Transcript excerpt:
+${transcriptText}
+
+Generate social media copy for all 5 platforms. For EACH platform, provide copy in all 5 tones. Also provide 5-7 hashtags per platform.
+
+Respond ONLY with a valid JSON object — no markdown, no explanation, just the JSON:
+{
+  "tiktok":    { "viral":"...","professional":"...","casual":"...","educational":"...","bold":"...","tags":["#tag1","#tag2"] },
+  "instagram": { "viral":"...","professional":"...","casual":"...","educational":"...","bold":"...","tags":["#tag1","#tag2"] },
+  "twitter":   { "viral":"...","professional":"...","casual":"...","educational":"...","bold":"...","tags":["#tag1","#tag2"] },
+  "youtube":   { "viral":"...","professional":"...","casual":"...","educational":"...","bold":"...","tags":["#tag1","#tag2"] },
+  "linkedin":  { "viral":"...","professional":"...","casual":"...","educational":"...","bold":"...","tags":["#tag1","#tag2"] }
+}
+
+Platform rules:
+- TikTok: short, hook-first, 2-3 short paragraphs max, emojis okay
+- Instagram: slightly longer, aspirational, good line breaks, hashtags natural
+- Twitter/X: 1-3 short punchy lines, threads okay for educational
+- YouTube Shorts: description style, 2-3 sentences
+- LinkedIn: professional but not stuffy, longer-form okay, insight-driven`;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-4-5',
+        max_tokens:4000,
+        system:systemPrompt,
+        messages:[{role:'user',content:userPrompt}]
+      })
+    });
+
+    clearInterval(labelIv);
+
+    if(!res.ok){
+      const err=await res.json().catch(()=>({}));
+      throw new Error(err?.error?.message||`API error ${res.status}`);
+    }
+
+    const data=await res.json();
+    const rawText=data.content?.find(b=>b.type==='text')?.text||'';
+
+    // Strip any markdown code fences
+    const parsed=parseJsonFromText(rawText);
+
+    // Merge into SOCIAL_COPY — preserve platform metadata, update copy + tags
+    const platforms=['tiktok','instagram','twitter','youtube','linkedin'];
+    platforms.forEach(pid=>{
+      if(parsed[pid]){
+        Object.assign(SOCIAL_COPY[pid],parsed[pid]);
+      }
+    });
+
+    renderSocialCards();
+    toast('Social copy generated by Claude ✦','success','✦');
+
+  }catch(err){
+    clearInterval(labelIv);
+    console.error('Claude API error:',err);
+    if(err.message?.includes('401')||err.message?.includes('invalid')){
+      toast('Invalid Anthropic key — check Settings','error','🔑');
+    } else if(err.message?.includes('SyntaxError')||err.message?.includes('JSON')){
+      toast('Unexpected response format — retrying with mock','error','⚠');
+    } else {
+      toast(`Claude error: ${err.message?.slice(0,60)||'unknown'}`, 'error','✕');
+    }
+  }finally{
+    document.getElementById('ai-generating-indicator').style.display='none';
+    const btn=document.getElementById('claude-gen-btn');
+    btn.disabled=false;
+    btn.textContent='Generate All';
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PHASE 2 — WHISPER SPEECH-TO-TEXT TRANSCRIPTION
+══════════════════════════════════════════════════════════════ */
+async function transcribeWithWhisper(file){
+  const key=localStorage.getItem('cas_openai_key');
+  if(!key){
+    // Fall back to mock transcription
+    startTranscribe();
+    return;
+  }
+
+  // Show transcribing state
+  document.getElementById('transcribe-idle').style.display='none';
+  document.getElementById('transcribe-loading').style.display='block';
+  document.getElementById('transcribe-label').textContent='Uploading to Whisper API…';
+  const bar=document.getElementById('transcribe-bar');
+  bar.style.width='15%';
+
+  // Animate bar while waiting
+  let fakeP=15;
+  const iv=setInterval(()=>{
+    fakeP=Math.min(85,fakeP+Math.random()*6+1);
+    bar.style.width=fakeP+'%';
+    if(fakeP>30)document.getElementById('transcribe-label').textContent='Transcribing speech… (Whisper)';
+    if(fakeP>60)document.getElementById('transcribe-label').textContent='Aligning timestamps…';
+    if(fakeP>78)document.getElementById('transcribe-label').textContent='Building segments…';
+  },600);
+
+  try{
+    const formData=new FormData();
+    formData.append('file',file,file.name||'recording.mp3');
+    formData.append('model','whisper-1');
+    formData.append('response_format','verbose_json');
+    formData.append('timestamp_granularities[]','segment');
+
+    const res=await fetch('https://api.openai.com/v1/audio/transcriptions',{
+      method:'POST',
+      headers:{'Authorization':`Bearer ${key}`},
+      body:formData
+    });
+
+    clearInterval(iv);
+
+    if(!res.ok){
+      const err=await res.json().catch(()=>({}));
+      throw new Error(err?.error?.message||`Whisper error ${res.status}`);
+    }
+
+    bar.style.width='100%';
+    const data=await res.json();
+
+    // Map Whisper segments → our TRANSCRIPT format
+    if(data.segments&&data.segments.length>0){
+      TRANSCRIPT.length=0;
+      data.segments.forEach(seg=>{
+        TRANSCRIPT.push({
+          t:secToTime(seg.start),
+          e:secToTime(seg.end),
+          text:seg.text.trim()
+        });
+      });
+      state.duration=data.duration||state.duration;
+      document.getElementById('total-time').textContent=secToTime(state.duration);
+      document.getElementById('meta-duration').textContent=secToTime(state.duration);
+    }
+
+    // Update stats
+    const wordCount=TRANSCRIPT.reduce((n,s)=>n+s.text.split(/\s+/).length,0);
+    document.querySelector('.mini-stat .mval').textContent=wordCount.toLocaleString();
+    document.querySelectorAll('.mini-stat')[1].querySelector('.mval').textContent=TRANSCRIPT.length;
+
+    setTimeout(()=>{
+      document.getElementById('transcribe-loading').style.display='none';
+      document.getElementById('transcribe-done').style.display='block';
+      document.getElementById('transcribe-done').innerHTML=`<div style="display:flex;align-items:center;gap:8px">
+        <span style="color:var(--teal)">●</span>
+        <span class="text-sm">Whisper transcript ready — ${wordCount.toLocaleString()} words, ${TRANSCRIPT.length} segments</span>
+        <button class="btn btn-ghost btn-sm" onclick="switchTab('transcript')">View Transcript →</button>
+      </div>`;
+      renderTranscript();
+      toast(`Whisper transcription complete — ${TRANSCRIPT.length} segments`,'success','🎙');
+      // Mark whisper badge as live and hide demo notice
+      document.getElementById('whisper-badge').className='whisper-badge live';
+      document.getElementById('whisper-badge').textContent='● Whisper Live';
+      document.getElementById('transcript-demo-notice').style.display='none';
+    },400);
+
+  }catch(err){
+    clearInterval(iv);
+    console.error('Whisper error:',err);
+    bar.style.width='0%';
+    document.getElementById('transcribe-loading').style.display='none';
+
+    const msg=err.message||'';
+    const isQuota=msg.includes('quota')||msg.includes('429')||msg.includes('exceeded')||msg.includes('billing');
+    const isAuth=msg.includes('401')||msg.includes('invalid')||msg.includes('Incorrect API key');
+    const isSize=msg.includes('413')||msg.includes('too large')||msg.includes('maximum');
+
+    if(isAuth){
+      document.getElementById('transcribe-idle').style.display='flex';
+      toast('Invalid OpenAI key — check Settings','error','🔑');
+    } else if(isQuota){
+      // Quota exceeded — fall back to mock automatically, no crash
+      toast('OpenAI quota exceeded — running demo transcript instead','info','⚡');
+      _origStartTranscribe(); // use the original mock, bypassing the Whisper override
+      document.getElementById('transcript-demo-notice').style.display='flex';
+    } else if(isSize){
+      document.getElementById('transcribe-idle').style.display='flex';
+      toast('File too large for Whisper (max 25 MB) — try compressing first','error','⚠');
+    } else {
+      toast(`Whisper unavailable — loading demo transcript`,'info','⚡');
+      _origStartTranscribe();
+      document.getElementById('transcript-demo-notice').style.display='flex';
+    }
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PHASE 2 — FILE DOWNLOAD UTILITIES
+══════════════════════════════════════════════════════════════ */
+function downloadFile(content,filename,mimeType){
+  const blob=new Blob([content],{type:mimeType});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function toSRTTime(s){
+  const h=Math.floor(s/3600),m=Math.floor((s%3600)/60);
+  const sec=Math.floor(s%60),ms=Math.round((s%1)*1000);
+  return `${pad2(h)}:${pad2(m)}:${pad2(sec)},${String(ms).padStart(3,'0')}`;
+}
+function toVTTTime(s){
+  const h=Math.floor(s/3600),m=Math.floor((s%3600)/60);
+  const sec=Math.floor(s%60),ms=Math.round((s%1)*1000);
+  return `${pad2(h)}:${pad2(m)}:${pad2(sec)}.${String(ms).padStart(3,'0')}`;
+}
+function pad2(n){return String(n).padStart(2,'0')}
+
+// Override handleFileUpload to route through Whisper if key exists
+const _origHandleUpload=handleFileUpload;
+window.handleFileUpload=function(file){
+  if(!file)return;
+  const ext=file.name.split('.').pop().toUpperCase();
+  const allowed=['MP3','WAV','MP4','M4A','AIFF','OGG','WEBM'];
+  if(!allowed.includes(ext)){toast('Unsupported format. Try MP3, WAV, or MP4.','error','✕');return}
+  toast('File uploaded!','success','✓');
+  document.getElementById('sample-tip').style.display='none';
+  document.getElementById('returning-tip').style.display='none';
+  showProjectCard(false,file);
+  state.uploadedFile=file;
+  loadAudioFile(file); // Phase 3: real audio player + waveform decode
+};
+// Override startTranscribe to use Whisper when key exists
+const _origStartTranscribe=startTranscribe;
+window.startTranscribe=function(){
+  const key=localStorage.getItem('cas_openai_key');
+  if(key&&state.uploadedFile){
+    transcribeWithWhisper(state.uploadedFile);
+  } else {
+    _origStartTranscribe();
+  }
+};
+
+/* ══════════════════════════════════════════════════════════════
+   PHASE 3 — CLAUDE AI TRANSLATION
+══════════════════════════════════════════════════════════════ */
+const LIVE_TRANSLATIONS = {}; // keyed by lang code, populated by Claude
+
+async function translateWithClaude(){
+  const key = localStorage.getItem('cas_anthropic_key');
+  if(!key){ toast('Add your Anthropic key in Settings first','error','🔑'); openSettings(); return; }
+
+  const lang = state.currentLang;
+  const langNames = {es:'Spanish',fr:'French',de:'German',pt:'Portuguese (Brazilian)',ja:'Japanese',ko:'Korean'};
+  const langName = langNames[lang] || lang;
+
+  // Use real transcript if available, else fall back to TRANSLATIONS mock
+  const segs = TRANSCRIPT.slice(0, 30); // cap at 30 segments for token budget
+  if(segs.length === 0){ toast('No transcript to translate yet','info','ℹ'); return; }
+
+  // Show progress
+  const prog = document.getElementById('trans-progress');
+  const progLabel = document.getElementById('trans-progress-label');
+  const segCount = document.getElementById('trans-seg-count');
+  prog.style.display = 'flex';
+  progLabel.textContent = `Translating to ${langName}…`;
+  segCount.textContent = `${segs.length} segments`;
+  document.getElementById('trans-gen-btn').disabled = true;
+  document.getElementById('trans-gen-btn').textContent = 'Translating…';
+
+  const transcriptJSON = JSON.stringify(segs.map(s=>({t:s.t, text:s.text})));
+
+  const prompt = `Translate the following podcast transcript segments into ${langName}. 
+Preserve the conversational tone. Keep the translation natural and idiomatic, not literal.
+
+Return ONLY a valid JSON array — no markdown, no explanation:
+[
+  {"t":"0:00","orig":"original text","trans":"translated text"},
+  ...
+]
+
+Transcript segments:
+${transcriptJSON}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-4-5',
+        max_tokens:4000,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+
+    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||`API ${res.status}`);}
+    const data = await res.json();
+    const raw = data.content?.find(b=>b.type==='text')?.text||'';
+    const rows = parseJsonFromText(raw);
+
+    // Store in live translations
+    LIVE_TRANSLATIONS[lang] = { name:langName, rows };
+    renderLiveTranslation(lang);
+    document.getElementById('trans-lang-label').textContent = langName;
+    toast(`Translation to ${langName} complete ✓`,'success','🌐');
+
+  } catch(err) {
+    console.error('Translation error:',err);
+    toast(`Translation failed: ${err.message?.slice(0,60)||'unknown'}`,'error','✕');
+    // Fall back to mock data
+    renderTranslation();
+  } finally {
+    prog.style.display = 'none';
+    document.getElementById('trans-gen-btn').disabled = false;
+    document.getElementById('trans-gen-btn').textContent = 'Translate';
+  }
+}
+
+function renderLiveTranslation(lang){
+  const data = LIVE_TRANSLATIONS[lang];
+  if(!data){ renderTranslation(); return; }
+  const tbody = document.getElementById('translation-body');
+  tbody.innerHTML = data.rows.map(r=>`
+    <tr>
+      <td class="td-time">${r.t}</td>
+      <td class="td-orig">${r.orig}</td>
+      <td class="td-trans">${r.trans}</td>
+    </tr>
+  `).join('');
+}
+
+// Override setLang to use live translations if available
+const _origSetLang = setLang;
+window.setLang = function(code, el){
+  state.currentLang = code;
+  document.querySelectorAll('.lang-card').forEach(e=>e.classList.remove('active'));
+  el.classList.add('active');
+  const langNames={es:'Spanish',fr:'French',de:'German',pt:'Portuguese',ja:'Japanese',ko:'Korean'};
+  document.getElementById('trans-lang-label').textContent = langNames[code]||code;
+  if(LIVE_TRANSLATIONS[code]) renderLiveTranslation(code);
+  else renderTranslation();
+};
+
+function exportTranslation(){
+  const lang = state.currentLang;
+  const data = LIVE_TRANSLATIONS[lang];
+  const rows = data ? data.rows : (TRANSLATIONS[lang]?.rows||[]);
+  const langName = data?.name || TRANSLATIONS[lang]?.name || lang;
+  let out = `TRANSLATION — ${langName.toUpperCase()}\n${'='.repeat(50)}\n\n`;
+  rows.forEach(r=>{ out += `[${r.t}]\nEN: ${r.orig}\n${langName}: ${r.trans}\n\n`; });
+  downloadFile(out, `translation-${lang}.txt`, 'text/plain');
+  toast(`${langName} translation downloaded`,'success','↓');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PHASE 3 — CLAUDE AI CLIP SUGGESTIONS
+══════════════════════════════════════════════════════════════ */
+async function generateClipsWithClaude(){
+  const key = localStorage.getItem('cas_anthropic_key');
+  if(!key){ toast('Add your Anthropic key in Settings first','error','🔑'); openSettings(); return; }
+  if(TRANSCRIPT.length === 0){ toast('No transcript loaded yet','info','ℹ'); return; }
+
+  // Show generating state
+  document.getElementById('clips-ai-generating').style.display = 'flex';
+  document.getElementById('claude-clips-btn').disabled = true;
+  document.getElementById('claude-clips-btn').textContent = 'Analyzing…';
+  document.getElementById('clips-list').style.opacity = '0.3';
+
+  const labels = [
+    'Scanning for strong hooks…',
+    'Finding high-energy moments…',
+    'Identifying quotable lines…',
+    'Scoring engagement potential…',
+    'Ranking clip candidates…'
+  ];
+  let li = 0;
+  const labelIv = setInterval(()=>{
+    document.getElementById('clips-ai-label').textContent = labels[li%labels.length]; li++;
+  }, 1100);
+
+  const transcriptText = TRANSCRIPT.map((s,i)=>`[${i}] ${s.t}-${s.e}: ${s.text}`).join('\n').slice(0,4000);
+  const clipLen = state.clipPreset === '15s' ? 15 : state.clipPreset === '30s' ? 30 : 60;
+  const title = document.getElementById('project-title')?.value || 'Podcast Episode';
+
+  const prompt = `You are an expert podcast clip editor. Analyze this transcript and suggest the 5 best clips for social media.
+
+Project: "${title}"
+Target clip length: ~${clipLen} seconds
+
+Transcript (segment index, timestamps, text):
+${transcriptText}
+
+Return ONLY a valid JSON array — no markdown, no explanation:
+[
+  {
+    "id": 1,
+    "title": "Short memorable clip title",
+    "start": "0:00",
+    "end": "0:30",
+    "score": 92,
+    "tags": ["Strong Hook"],
+    "text": "One-sentence summary of why this clip works"
+  }
+]
+
+Tag rules — use 1-3 from: "Strong Hook", "High Energy", "Quote Moment", "Educational Nugget", "Story Beat", "Controversial Take", "Actionable Tip"
+Score 0-100 based on engagement potential for short-form social.
+Pick moments with natural start/end points. Use exact timestamps from the transcript.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-4-5',
+        max_tokens:2000,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+
+    clearInterval(labelIv);
+    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||`API ${res.status}`);}
+    const data = await res.json();
+    const raw = data.content?.find(b=>b.type==='text')?.text||'';
+    const parsed = parseJsonFromText(raw);
+
+    // Replace CLIPS array with Claude's suggestions
+    CLIPS.length = 0;
+    parsed.forEach((c,i)=>{ CLIPS.push({...c, id:i+1, fav:false}); });
+    state.clipsFavs.clear();
+    state.clipsRenamed = {};
+    renderClips();
+    document.getElementById('clip-count-badge').textContent = CLIPS.length;
+    toast(`${CLIPS.length} clips suggested from your transcript`,'success','✦');
+
+  } catch(err) {
+    clearInterval(labelIv);
+    console.error('Clip AI error:',err);
+    toast(`Clip analysis failed: ${err.message?.slice(0,60)||'unknown'}`,'error','✕');
+    renderClips(); // restore whatever was there
+  } finally {
+    document.getElementById('clips-ai-generating').style.display = 'none';
+    document.getElementById('claude-clips-btn').disabled = false;
+    document.getElementById('claude-clips-btn').textContent = 'Analyze';
+    document.getElementById('clips-list').style.opacity = '1';
+  }
+}
+// Run after main init
+window.addEventListener('load',()=>{
+  // Check for saved keys and update UI status
+  const hasAnthropic=!!localStorage.getItem('cas_anthropic_key');
+  const hasOpenAI=!!localStorage.getItem('cas_openai_key');
+  if(hasAnthropic)updateKeyStatus('anthropic',true);
+  if(hasOpenAI){updateKeyStatus('openai',true);refreshWhisperBadge();}
+  // Update generate button hint
+  if(!hasAnthropic){
+    const hint=document.createElement('span');
+    hint.style.cssText='font-size:.72rem;color:var(--text3);align-self:center';
+    hint.textContent='Add API key in Settings to use real AI';
+    document.getElementById('claude-gen-btn')?.parentNode?.appendChild(hint);
+  }
+},true); // capture phase so runs after existing load handler
+if(!CanvasRenderingContext2D.prototype.roundRect){
+  CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){
+    this.beginPath();this.moveTo(x+r,y);this.lineTo(x+w-r,y);this.arcTo(x+w,y,x+w,y+r,r);
+    this.lineTo(x+w,y+h-r);this.arcTo(x+w,y+h,x+w-r,y+h,r);this.lineTo(x+r,y+h);
+    this.arcTo(x,y+h,x,y+h-r,r);this.lineTo(x,y+r);this.arcTo(x,y,x+r,y,r);this.closePath();
+  };
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,2851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mix Grader — Frequency Suite</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --gold: #C9A84C;
+    --gold-dim: #8A6E2F;
+    --gold-glow: rgba(201,168,76,0.15);
+    --bg: #0A0A0A;
+    --bg2: #111111;
+    --bg3: #181818;
+    --bg4: #202020;
+    --border: rgba(201,168,76,0.2);
+    --border-dim: rgba(255,255,255,0.12);
+    --text: #F5F0E8;
+    --text-dim: #BDB4AA;
+    --text-mid: #DED6CC;
+    --green: #4CAF7A;
+    --yellow: #E8C84C;
+    --orange: #E8944C;
+    --red: #E85C4C;
+    --blue: #4C8CE8;
+    --mono: 'Space Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Scan line overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.08) 2px,
+      rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg2);
+  }
+
+  .logo {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+
+  .logo span {
+    color: var(--text-dim);
+    margin: 0 8px;
+  }
+
+  .version {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+  }
+
+  .home-link {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    text-decoration: none;
+    border: 1px solid var(--border-dim);
+    border-radius: 2px;
+    padding: 5px 12px;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .home-link:hover { border-color: var(--gold-dim); color: var(--gold); }
+  button:focus-visible,.home-link:focus-visible,input:focus-visible,select:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 32px;
+  }
+
+  /* ── Drop Zone ── */
+  #drop-zone {
+    border: 1px dashed var(--gold-dim);
+    border-radius: 4px;
+    padding: 60px 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--bg2);
+    position: relative;
+    overflow: hidden;
+  }
+
+  #drop-zone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gold-glow);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  #drop-zone:hover::before,
+  #drop-zone.drag-over::before { opacity: 1; }
+
+  #drop-zone.drag-over {
+    border-color: var(--gold);
+  }
+
+  .drop-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 20px;
+    border: 1px solid var(--gold-dim);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .drop-icon svg { color: var(--gold); }
+
+  .drop-title {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  .drop-sub {
+    color: var(--text-dim);
+    font-size: 12px;
+    line-height: 1.7;
+  }
+
+  .format-pills {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+
+  .pill {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border: 1px solid var(--border-dim);
+    border-radius: 2px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+  }
+
+  #file-input { display: none; }
+
+  /* ── Progress ── */
+  #progress-panel {
+    display: none;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 32px;
+  }
+
+  .progress-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .progress-bar-wrap {
+    background: var(--bg4);
+    height: 3px;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--gold);
+    border-radius: 2px;
+    transition: width 0.3s;
+    width: 0%;
+  }
+
+  .progress-step {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  /* ── File Meta ── */
+  #file-meta {
+    display: none;
+    background: var(--bg3);
+    border: 1px solid var(--border-dim);
+    border-radius: 4px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: none;
+    gap: 32px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .meta-item { display: flex; flex-direction: column; gap: 3px; }
+  .meta-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.15em; color: var(--text-dim); text-transform: uppercase; }
+  .meta-value { font-family: var(--mono); font-size: 13px; color: var(--text); }
+
+  /* ── Results ── */
+  #results { display: none; }
+
+  .section-header {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-dim);
+  }
+
+  /* ── Grade Card ── */
+  .grade-row {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+    align-items: start;
+  }
+
+  .grade-badge {
+    width: 120px;
+    height: 120px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .grade-letter {
+    font-family: var(--mono);
+    font-size: 56px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .grade-number {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  .subscores {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .subscore-card {
+    background: var(--bg2);
+    border: 1px solid var(--border-dim);
+    border-radius: 4px;
+    padding: 14px 16px;
+  }
+
+  .subscore-name {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .subscore-bar-wrap {
+    background: var(--bg4);
+    height: 3px;
+    border-radius: 2px;
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+
+  .subscore-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.8s cubic-bezier(0.25,1,0.5,1);
+  }
+
+  .subscore-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .subscore-value {
+    font-family: var(--mono);
+    font-size: 20px;
+  }
+
+  .subscore-grade {
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+
+  /* ── Energy Timeline ── */
+  .timeline-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--border-dim);
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+
+  #energy-canvas {
+    width: 100%;
+    display: block;
+    border-radius: 2px;
+  }
+
+  .timeline-legend {
+    display: flex;
+    gap: 20px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── Transitions Table ── */
+  .transitions-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 24px;
+  }
+
+  .transitions-table th {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border-dim);
+  }
+
+  .transitions-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-dim);
+    font-size: 13px;
+  }
+
+  .transitions-table tr:last-child td { border-bottom: none; }
+
+  .transitions-table tr:hover td { background: var(--bg3); }
+
+  .grade-chip {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 2px;
+    display: inline-block;
+  }
+
+  .type-chip {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 2px;
+    border: 1px solid var(--border-dim);
+    color: var(--text-mid);
+  }
+
+  /* ── Insights ── */
+  .insights-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 32px;
+  }
+
+  .insight-item {
+    background: var(--bg2);
+    border: 1px solid var(--border-dim);
+    border-left: 3px solid var(--gold-dim);
+    border-radius: 0 4px 4px 0;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--text-mid);
+    line-height: 1.6;
+  }
+
+  .insight-item.good { border-left-color: var(--green); }
+  .insight-item.warn { border-left-color: var(--orange); }
+  .insight-item.bad  { border-left-color: var(--red); }
+
+  /* ── Reset ── */
+  .reset-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    background: none;
+    border: 1px solid var(--border-dim);
+    border-radius: 2px;
+    padding: 8px 16px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    margin-bottom: 32px;
+  }
+
+  .reset-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+
+  /* ── Weights Panel ── */
+  .weights-panel {
+    background: var(--bg2);
+    border: 1px solid var(--border-dim);
+    border-radius: 4px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+  }
+
+  .weights-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 28px;
+    margin-bottom: 16px;
+  }
+
+  .weight-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .weight-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .weight-name {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .weight-pct {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--gold);
+  }
+
+  .weight-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 3px;
+    background: var(--bg4);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .weight-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: var(--gold);
+    cursor: pointer;
+    border: none;
+  }
+
+  .weight-slider::-moz-range-thumb {
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: var(--gold);
+    cursor: pointer;
+    border: none;
+  }
+
+  .weights-footer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .recalc-btn {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+    background: none;
+    border: 1px solid var(--gold-dim);
+    border-radius: 2px;
+    padding: 6px 14px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+
+  .recalc-btn:hover { background: var(--gold-glow); }
+
+  .reset-weights-btn {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    background: none;
+    border: 1px solid var(--border-dim);
+    border-radius: 2px;
+    padding: 6px 14px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+
+  .reset-weights-btn:hover { border-color: var(--gold-dim); color: var(--text); }
+
+  .weights-total {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-left: auto;
+  }
+
+  .weights-total span { color: var(--gold); }
+
+  /* ── Colors ── */
+  .c-green { color: var(--green); }
+  .c-yellow { color: var(--yellow); }
+  .c-orange { color: var(--orange); }
+  .c-red { color: var(--red); }
+  .c-gold { color: var(--gold); }
+
+  .bg-green { background: rgba(76,175,122,0.15); }
+  .bg-yellow { background: rgba(232,200,76,0.15); }
+  .bg-orange { background: rgba(232,148,76,0.15); }
+  .bg-red { background: rgba(232,92,76,0.15); }
+
+  /* ── Genre Selector ── */
+  .genre-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 22px;
+    flex-wrap: wrap;
+  }
+
+  .genre-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .genre-select {
+    font-family: var(--mono);
+    font-size: 11px;
+    background: var(--bg3);
+    color: var(--text);
+    border: 1px solid var(--border-dim);
+    border-radius: 2px;
+    padding: 5px 10px;
+    cursor: pointer;
+    outline: none;
+    letter-spacing: 0.05em;
+  }
+
+  .genre-select:focus { border-color: var(--gold-dim); }
+
+  .genre-hint {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-style: italic;
+  }
+
+  /* ── Dead Air ── */
+  .dead-air-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 24px;
+  }
+
+  .dead-air-table th {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border-dim);
+  }
+
+  .dead-air-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-dim);
+    font-size: 13px;
+  }
+
+  .dead-air-table tr:last-child td { border-bottom: none; }
+  .dead-air-table tr:hover td { background: var(--bg3); }
+
+  .severity-chip {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 2px;
+    display: inline-block;
+  }
+
+  /* ── Results Top Bar ── */
+  .results-topbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+  }
+
+  .export-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+    background: none;
+    border: 1px solid var(--gold-dim);
+    border-radius: 2px;
+    padding: 8px 16px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .export-btn:hover { background: var(--gold-glow); border-color: var(--gold); }
+
+  /* ── Export Modal ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal-box {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 32px;
+    width: 420px;
+    max-width: 92vw;
+  }
+
+  .modal-title {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .modal-formats {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .format-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--border-dim);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+
+  .format-option:hover { border-color: var(--gold-dim); }
+  .format-option.selected { border-color: var(--gold); background: var(--gold-glow); }
+
+  .format-option input[type=radio] { margin-top: 2px; accent-color: var(--gold); flex-shrink: 0; }
+
+  .format-name {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+
+  .format-desc {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  .modal-cancel {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    background: none;
+    border: 1px solid var(--border-dim);
+    border-radius: 2px;
+    padding: 8px 16px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+
+  .modal-cancel:hover { border-color: var(--border); color: var(--text); }
+
+  .modal-download {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--bg);
+    background: var(--gold);
+    border: 1px solid var(--gold);
+    border-radius: 2px;
+    padding: 8px 18px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+
+  .modal-download:hover { background: #d4b455; border-color: #d4b455; }
+
+  /* ── Zoom Panel ── */
+  #zoom-panel {
+    display: none;
+    margin-top: 12px;
+    background: var(--bg3);
+    border: 1px solid var(--border-dim);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .zoom-infobar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 14px;
+    background: var(--bg4);
+    border-bottom: 1px solid var(--border-dim);
+    flex-wrap: wrap;
+  }
+
+  .zoom-range {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 0.06em;
+  }
+
+  .zoom-events {
+    font-size: 11px;
+    color: var(--text-dim);
+    flex: 1;
+  }
+
+  .zoom-reset {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    background: none;
+    border: 1px solid var(--border-dim);
+    border-radius: 2px;
+    padding: 4px 10px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    margin-left: auto;
+  }
+
+  .zoom-reset:hover { border-color: var(--gold-dim); color: var(--gold); }
+
+  #zoom-canvas {
+    width: 100%;
+    display: block;
+  }
+
+  .zoom-hint {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: center;
+    padding: 6px;
+    font-style: italic;
+  }
+
+  /* ── About Modal ── */
+  .about-box {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    width: 640px;
+    max-width: 95vw;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .about-header {
+    padding: 24px 28px 20px;
+    border-bottom: 1px solid var(--border-dim);
+    flex-shrink: 0;
+  }
+
+  .about-eyebrow {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .about-title {
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+
+  .about-subtitle {
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 0.03em;
+  }
+
+  .about-body {
+    padding: 24px 28px;
+    overflow-y: auto;
+    flex: 1;
+    line-height: 1.75;
+  }
+
+  .about-body::-webkit-scrollbar { width: 4px; }
+  .about-body::-webkit-scrollbar-track { background: transparent; }
+  .about-body::-webkit-scrollbar-thumb { background: var(--border-dim); border-radius: 2px; }
+
+  .about-section { margin-bottom: 28px; }
+
+  .about-section-title {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border-dim);
+  }
+
+  .about-body p { font-size: 13px; color: var(--text-mid); margin-bottom: 10px; }
+  .about-body strong { color: var(--text); font-weight: 500; }
+
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px; }
+
+  .about-feature {
+    background: var(--bg3);
+    border: 1px solid var(--border-dim);
+    border-radius: 4px;
+    padding: 12px 14px;
+  }
+
+  .about-feature-name {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .about-feature-desc { font-size: 12px; color: var(--text-dim); line-height: 1.6; }
+
+  .about-caveat {
+    background: var(--bg3);
+    border-left: 3px solid var(--gold-dim);
+    border-radius: 0 4px 4px 0;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.65;
+    margin-bottom: 8px;
+  }
+
+  .about-caveat strong { color: var(--text-mid); }
+
+  .version-list { display: flex; flex-direction: column; gap: 0; }
+
+  .version-item {
+    display: grid;
+    grid-template-columns: 76px 1fr;
+    gap: 0 16px;
+    position: relative;
+    padding-bottom: 16px;
+  }
+
+  .version-item:last-child { padding-bottom: 0; }
+
+  .version-item::before {
+    content: '';
+    position: absolute;
+    left: 68px;
+    top: 8px;
+    bottom: 0;
+    width: 1px;
+    background: var(--border-dim);
+  }
+
+  .version-item:last-child::before { display: none; }
+
+  .version-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--gold);
+    text-align: right;
+    padding-top: 2px;
+    letter-spacing: 0.05em;
+  }
+
+  .version-dot {
+    position: absolute;
+    left: 65px;
+    top: 5px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--gold-dim);
+    border: 1px solid var(--gold);
+  }
+
+  .version-item:first-child .version-dot { background: var(--gold); }
+
+  .version-content { padding-left: 16px; }
+
+  .version-notes { font-size: 12px; color: var(--text-dim); line-height: 1.8; }
+
+  .version-notes li { list-style: none; padding-left: 14px; position: relative; }
+
+  .version-notes li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--gold-dim);
+    font-size: 10px;
+    top: 1px;
+  }
+
+  .about-footer {
+    padding: 14px 28px;
+    border-top: 1px solid var(--border-dim);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .about-footer-text {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+  }
+  @media (max-width: 768px) {
+    header { align-items: flex-start; flex-wrap: wrap; padding: 14px 18px; gap: 10px; }
+    header > div:last-child { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 8px !important; }
+    main { padding: 26px 16px; }
+    #drop-zone { padding: 42px 22px; }
+    .subscores,.about-grid { grid-template-columns: 1fr; }
+    .format-pills,.weights-actions { justify-content: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Mix Grader <span>·</span> Frequency Suite</div>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <a class="home-link" href="producers-crate-index.html">Crate Home</a>
+    <button onclick="openAbout()" style="font-family:var(--mono);font-size:10px;letter-spacing:0.12em;color:var(--text-dim);background:none;border:1px solid var(--border-dim);border-radius:2px;padding:5px 12px;cursor:pointer;text-transform:uppercase;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--gold-dim)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border-dim)';this.style.color='var(--text-dim)'">About</button>
+    <div class="version">v1.4.0</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- Drop Zone -->
+  <div id="drop-zone" onclick="document.getElementById('file-input').click()">
+    <div class="drop-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+    </div>
+    <div class="drop-title">Drop your mix file here</div>
+    <div class="drop-sub">or click to browse · local files only, streaming URLs not supported</div>
+    <div class="genre-row">
+      <span class="genre-label">Genre</span>
+      <select class="genre-select" id="genre-select" onchange="onGenreChange()">
+        <option value="open">Open Format (default)</option>
+        <option value="rnb">R&amp;B / Hip-Hop</option>
+        <option value="house">House / Techno</option>
+        <option value="dnb">Drum &amp; Bass</option>
+        <option value="ambient">Ambient / Downtempo</option>
+      </select>
+      <span class="genre-hint" id="genre-hint">balanced weights</span>
+    </div>
+    <div class="format-pills">
+      <span class="pill">MP3</span>
+      <span class="pill">WAV</span>
+      <span class="pill">FLAC</span>
+      <span class="pill">AAC</span>
+      <span class="pill">M4A</span>
+      <span class="pill">OGG</span>
+    </div>
+    <input type="file" id="file-input" accept=".mp3,.wav,.flac,.aac,.m4a,.ogg,audio/*">
+  </div>
+
+  <!-- Progress -->
+  <div id="progress-panel">
+    <div class="progress-label" id="progress-label">Decoding audio…</div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-bar"></div></div>
+    <div class="progress-step" id="progress-step">Reading file…</div>
+  </div>
+
+  <!-- File Meta -->
+  <div id="file-meta" style="display:none; gap:32px; align-items:center; flex-wrap:wrap; background:var(--bg3); border:1px solid var(--border-dim); border-radius:4px; padding:16px 20px; margin-bottom:24px;">
+    <div class="meta-item"><span class="meta-label">File</span><span class="meta-value" id="meta-name">—</span></div>
+    <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value" id="meta-dur">—</span></div>
+    <div class="meta-item"><span class="meta-label">Sample rate</span><span class="meta-value" id="meta-sr">—</span></div>
+    <div class="meta-item"><span class="meta-label">Channels</span><span class="meta-value" id="meta-ch">—</span></div>
+    <div class="meta-item"><span class="meta-label">File size</span><span class="meta-value" id="meta-size">—</span></div>
+  </div>
+
+  <!-- Results -->
+  <div id="results">
+    <div class="results-topbar">
+      <button class="reset-btn" onclick="resetApp()">← Analyze another mix</button>
+      <button class="export-btn" onclick="openExportModal()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export report
+      </button>
+    </div>
+
+    <!-- Scoring Weights -->
+    <div class="section-header">Scoring Weights <span style="font-size:9px;color:var(--text-dim);letter-spacing:0.05em;text-transform:none;font-family:var(--sans)">— drag to adjust, then recalculate</span></div>
+    <div class="weights-panel">
+      <div class="weights-grid">
+        <div class="weight-row">
+          <div class="weight-label-row">
+            <span class="weight-name">Transitions</span>
+            <span class="weight-pct" id="wpct-transitions">35%</span>
+          </div>
+          <input class="weight-slider" type="range" min="0" max="100" value="35" id="w-transitions" oninput="updateWeightDisplay()">
+        </div>
+        <div class="weight-row">
+          <div class="weight-label-row">
+            <span class="weight-name">Energy arc</span>
+            <span class="weight-pct" id="wpct-energy">25%</span>
+          </div>
+          <input class="weight-slider" type="range" min="0" max="100" value="25" id="w-energy" oninput="updateWeightDisplay()">
+        </div>
+        <div class="weight-row">
+          <div class="weight-label-row">
+            <span class="weight-name">Gain / clip</span>
+            <span class="weight-pct" id="wpct-gain">20%</span>
+          </div>
+          <input class="weight-slider" type="range" min="0" max="100" value="20" id="w-gain" oninput="updateWeightDisplay()">
+        </div>
+        <div class="weight-row">
+          <div class="weight-label-row">
+            <span class="weight-name">BPM consistency</span>
+            <span class="weight-pct" id="wpct-bpm">20%</span>
+          </div>
+          <input class="weight-slider" type="range" min="0" max="100" value="20" id="w-bpm" oninput="updateWeightDisplay()">
+        </div>
+      </div>
+      <div class="weights-footer">
+        <button class="recalc-btn" onclick="recalculateScores()">Recalculate grade</button>
+        <button class="reset-weights-btn" onclick="resetWeights()">Reset defaults</button>
+        <div class="weights-total">Effective weights normalized to <span id="weights-sum-display">100%</span></div>
+      </div>
+    </div>
+
+    <div class="section-header">Overall Grade</div>
+    <div class="grade-row">
+      <div class="grade-badge">
+        <div class="grade-letter" id="overall-letter">—</div>
+        <div class="grade-number" id="overall-number">0 / 100</div>
+      </div>
+      <div class="subscores" id="subscores"></div>
+    </div>
+
+    <div class="section-header">Energy Timeline <span style="font-size:9px;color:var(--text-dim);letter-spacing:0.05em;text-transform:none;font-family:var(--sans)">— click to jump · drag to zoom a region</span></div>
+    <div class="timeline-wrap">
+      <canvas id="energy-canvas" height="130" style="cursor:crosshair"></canvas>
+      <div id="zoom-panel">
+        <div class="zoom-infobar">
+          <span class="zoom-range" id="zoom-range">—</span>
+          <span class="zoom-events" id="zoom-events"></span>
+          <button class="zoom-reset" onclick="clearZoom()">✕ Clear zoom</button>
+        </div>
+        <canvas id="zoom-canvas" height="120"></canvas>
+      </div>
+      <div class="timeline-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--gold)"></div>Energy (RMS)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(255,255,255,0.2)"></div>Waveform</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div>Dead air</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Clip events</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>Transitions</div>
+      </div>
+    </div>
+
+    <div class="section-header">Transition Breakdown</div>
+    <table class="transitions-table" id="transitions-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Timestamp</th>
+          <th>Type</th>
+          <th>Blend dur.</th>
+          <th>BPM before → after</th>
+          <th>Grade</th>
+        </tr>
+      </thead>
+      <tbody id="transitions-body"></tbody>
+    </table>
+
+    <div class="section-header">Analysis Insights</div>
+    <div class="insights-list" id="insights-list"></div>
+
+    <div id="dead-air-section" style="display:none">
+      <div class="section-header">Dead Air / Silence Events</div>
+      <table class="dead-air-table">
+        <thead>
+          <tr>
+            <th>#</th><th>Start</th><th>End</th><th>Duration</th><th>Severity</th>
+          </tr>
+        </thead>
+        <tbody id="dead-air-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<!-- Export Modal -->
+<div class="modal-overlay" id="export-modal" onclick="onModalOverlayClick(event)">
+  <div class="modal-box">
+    <div class="modal-title">Export Analysis Report</div>
+    <div class="modal-formats" id="modal-formats">
+      <label class="format-option selected" onclick="selectFormat('txt')">
+        <input type="radio" name="export-fmt" value="txt" checked>
+        <div>
+          <div class="format-name">Plain text  (.txt)</div>
+          <div class="format-desc">Clean readable summary — easy to copy, paste, or share in messages and emails.</div>
+        </div>
+      </label>
+      <label class="format-option" onclick="selectFormat('html')">
+        <input type="radio" name="export-fmt" value="html">
+        <div>
+          <div class="format-name">HTML report  (.html)</div>
+          <div class="format-desc">Standalone light-theme document — open in any browser, print as PDF, or archive.</div>
+        </div>
+      </label>
+      <label class="format-option" onclick="selectFormat('json')">
+        <input type="radio" name="export-fmt" value="json">
+        <div>
+          <div class="format-name">Raw data  (.json)</div>
+          <div class="format-desc">Full analysis object — scores, transitions, silence events, BPM data. Useful for further processing.</div>
+        </div>
+      </label>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeExportModal()">Cancel</button>
+      <button class="modal-download" onclick="doExport()">Download</button>
+    </div>
+  </div>
+</div>
+
+<!-- About Modal -->
+<div class="modal-overlay" id="about-modal" onclick="onAboutOverlayClick(event)">
+  <div class="about-box">
+
+    <div class="about-header">
+      <div class="about-eyebrow">Frequency Suite</div>
+      <div class="about-title">Mix Grader</div>
+      <div class="about-subtitle">Browser-native DJ mix analysis &amp; quality scoring — v1.4.0</div>
+    </div>
+
+    <div class="about-body">
+
+      <div class="about-section">
+        <div class="about-section-title">What it does</div>
+        <p>Mix Grader analyzes a recorded DJ mix and scores it across four technical dimensions — transitions, energy arc, gain staging, and BPM consistency — producing an overall letter grade and a detailed breakdown of every detectable event in the recording.</p>
+        <p>It runs entirely in the browser using the Web Audio API. <strong>No files are uploaded anywhere.</strong> Your mix stays on your machine from start to finish.</p>
+      </div>
+
+      <div class="about-section">
+        <div class="about-section-title">Analysis modules</div>
+        <div class="about-grid">
+          <div class="about-feature">
+            <div class="about-feature-name">BPM Detection</div>
+            <div class="about-feature-desc">Autocorrelation on the onset envelope across the full mix, plus per-segment analysis on both sides of each detected transition. Octave correction prevents 88 BPM reading as 176.</div>
+          </div>
+          <div class="about-feature">
+            <div class="about-feature-name">Transition Detection</div>
+            <div class="about-feature-desc">Finds local energy minima below an adaptive threshold. Classifies each as Blend, Quick mix, or Hard cut based on dip depth and width. Grades using blend quality, BPM drift, and transition type.</div>
+          </div>
+          <div class="about-feature">
+            <div class="about-feature-name">Energy Arc</div>
+            <div class="about-feature-desc">RMS measured in 0.5-second windows across the full duration. Scored on coefficient of variation — rewards dynamic mixes that build and breathe, penalizes flat or chaotic level profiles.</div>
+          </div>
+          <div class="about-feature">
+            <div class="about-feature-name">Gain &amp; Clipping</div>
+            <div class="about-feature-desc">Walks every sample checking for 0dBFS events. Reports clip count, clip ratio, and an approximate LUFS loudness value. Scored against an ideal broadcast-safe range of −14 to −8 LUFS.</div>
+          </div>
+          <div class="about-feature">
+            <div class="about-feature-name">Dead Air Detection</div>
+            <div class="about-feature-desc">Scans for consecutive windows below a genre-adjusted silence threshold. Events over 1.5 seconds are flagged and classified Minor, Major, or Critical by duration.</div>
+          </div>
+          <div class="about-feature">
+            <div class="about-feature-name">Waveform &amp; Zoom</div>
+            <div class="about-feature-desc">Full PCM waveform drawn behind the energy arc. Click or drag on the timeline to open a high-resolution zoom view of any region — useful for inspecting individual transitions up close.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-section">
+        <div class="about-section-title">Honest caveats</div>
+        <div class="about-caveat"><strong>Technical execution only.</strong> Mix Grader grades what's in the signal — beatmatching, gain staging, dead air, energy flow. It cannot grade taste, track selection, crowd reading, or whether the programming was emotionally right. Most bad mixes fail on the technical side first anyway, so the signal is still meaningful.</div>
+        <div class="about-caveat"><strong>No track identification.</strong> Recognizing individual tracks requires fingerprinting APIs (ACRCloud, AudD) which would require sending audio to an external server. That's outside scope by design.</div>
+        <div class="about-caveat"><strong>Streaming URLs not supported.</strong> Mixcloud, SoundCloud, and similar platforms use DRM or token-protected streams the browser cannot access. Drop a local file (MP3, WAV, FLAC, AAC, M4A, OGG).</div>
+        <div class="about-caveat"><strong>Large WAV files.</strong> decodeAudioData() expands compressed audio to raw PCM in memory. A 200MB MP3 becomes ~700MB of Float32 samples. Works fine on modern hardware — may be slow or memory-constrained on older devices.</div>
+      </div>
+
+      <div class="about-section">
+        <div class="about-section-title">Scoring &amp; weights</div>
+        <p>The four module scores are combined into a weighted overall grade. Default weights are <strong>Transitions 35% · Energy Arc 25% · Gain/Clip 20% · BPM Consistency 20%</strong>, reflecting that transitions are the most immediately audible quality signal in a DJ mix.</p>
+        <p>Weights are fully configurable via the sliders above the grade card. Five genre presets (Open Format, R&amp;B/Hip-Hop, House/Techno, Drum &amp; Bass, Ambient/Downtempo) apply tuned defaults including adjusted BPM ranges and silence thresholds.</p>
+      </div>
+
+      <div class="about-section">
+        <div class="about-section-title">Version history</div>
+        <div class="version-list">
+          <div class="version-item">
+            <div class="version-tag">v1.4.0</div>
+            <div class="version-dot"></div>
+            <div class="version-content">
+              <ul class="version-notes">
+                <li>Waveform zoom — click or drag the timeline to inspect any region at full PCM resolution</li>
+                <li>Zoom infobar shows selected range and flagged events within the window</li>
+                <li>Grade letter and BPM labels overlaid on transition markers in the zoom view</li>
+              </ul>
+            </div>
+          </div>
+          <div class="version-item">
+            <div class="version-tag">v1.3.0</div>
+            <div class="version-dot"></div>
+            <div class="version-content">
+              <ul class="version-notes">
+                <li>Export report in three formats — plain text, standalone HTML, and raw JSON</li>
+                <li>HTML report is print-ready and can be saved as PDF from any browser</li>
+              </ul>
+            </div>
+          </div>
+          <div class="version-item">
+            <div class="version-tag">v1.2.0</div>
+            <div class="version-dot"></div>
+            <div class="version-content">
+              <ul class="version-notes">
+                <li>Waveform display drawn behind energy arc on the main timeline canvas</li>
+                <li>Dead air / silence detection with orange band overlays and severity table</li>
+                <li>Genre hint selector — five presets with tuned weights, BPM ranges, and silence thresholds</li>
+              </ul>
+            </div>
+          </div>
+          <div class="version-item">
+            <div class="version-tag">v1.1.0</div>
+            <div class="version-dot"></div>
+            <div class="version-content">
+              <ul class="version-notes">
+                <li>Real per-segment BPM detection replacing simulated drift values</li>
+                <li>Transitions table now shows actual Before → After BPM with octave correction</li>
+                <li>Configurable scoring weights panel with live recalculation</li>
+              </ul>
+            </div>
+          </div>
+          <div class="version-item">
+            <div class="version-tag">v1.0.0</div>
+            <div class="version-dot"></div>
+            <div class="version-content">
+              <ul class="version-notes">
+                <li>Initial release — BPM detection, transition detection, energy arc, gain/clip analysis</li>
+                <li>Energy timeline canvas with transition markers and clip event indicators</li>
+                <li>Letter grade output with four subscores and analysis insights panel</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="about-footer">
+      <div class="about-footer-text">Mix Grader · Frequency Suite · Browser-native · No uploads · No dependencies</div>
+      <button class="modal-cancel" onclick="closeAbout()">Close</button>
+    </div>
+
+  </div>
+</div>
+<script>
+// ── State ──────────────────────────────────────────────────
+let audioCtx = null;
+let analysisData = null;
+let zoomState = { active: false, startX: null, endX: null, startT: null, endT: null };
+let dragState  = { dragging: false, originX: null };
+
+// ── Genre Presets ──────────────────────────────────────────
+const GENRE_PRESETS = {
+  open:    { label:'balanced weights',           w:{ transitions:35, energy:25, gain:20, bpm:20 }, bpmRange:[60,180],  silenceThreshold:0.003 },
+  rnb:     { label:'transitions + gain focus',   w:{ transitions:40, energy:20, gain:25, bpm:15 }, bpmRange:[60,110],  silenceThreshold:0.004 },
+  house:   { label:'energy + BPM tight',         w:{ transitions:30, energy:30, gain:20, bpm:20 }, bpmRange:[115,145], silenceThreshold:0.002 },
+  dnb:     { label:'energy arc primary',         w:{ transitions:25, energy:35, gain:20, bpm:20 }, bpmRange:[160,185], silenceThreshold:0.002 },
+  ambient: { label:'energy + gain, loose BPM',   w:{ transitions:20, energy:40, gain:25, bpm:15 }, bpmRange:[60,100],  silenceThreshold:0.005 }
+};
+
+function onGenreChange() {
+  const g = document.getElementById('genre-select').value;
+  const preset = GENRE_PRESETS[g];
+  document.getElementById('genre-hint').textContent = preset.label;
+}
+
+function applyGenrePreset() {
+  const g = document.getElementById('genre-select').value;
+  const { w } = GENRE_PRESETS[g];
+  document.getElementById('w-transitions').value = w.transitions;
+  document.getElementById('w-energy').value      = w.energy;
+  document.getElementById('w-gain').value        = w.gain;
+  document.getElementById('w-bpm').value         = w.bpm;
+  updateWeightDisplay();
+}
+
+function currentGenre() {
+  return document.getElementById('genre-select').value;
+}
+
+// ── Drop Zone ──────────────────────────────────────────────
+const dropZone = document.getElementById('drop-zone');
+
+dropZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  dropZone.classList.add('drag-over');
+});
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) processFile(file);
+});
+document.getElementById('file-input').addEventListener('change', e => {
+  if (e.target.files[0]) processFile(e.target.files[0]);
+});
+
+// ── File Processing ────────────────────────────────────────
+async function processFile(file) {
+  const allowed = ['audio/mpeg','audio/wav','audio/flac','audio/aac','audio/mp4','audio/ogg','audio/x-flac','audio/x-m4a'];
+  const ext = file.name.split('.').pop().toLowerCase();
+  const allowedExt = ['mp3','wav','flac','aac','m4a','ogg'];
+
+  if (!allowedExt.includes(ext)) {
+    alert('Unsupported format. Please use MP3, WAV, FLAC, AAC, M4A, or OGG.');
+    return;
+  }
+
+  dropZone.style.display = 'none';
+  applyGenrePreset();
+  setProgress(5, 'Reading file…');
+  showPanel('progress-panel');
+
+  try {
+    const arrayBuffer = await readFile(file);
+    setProgress(20, 'Decoding audio…');
+
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+
+    setProgress(40, 'Running BPM & onset detection…');
+    await delay(60);
+    const bpmData = analyzeBPM(audioBuffer);
+
+    setProgress(55, 'Detecting transitions…');
+    await delay(60);
+    const energyData = analyzeEnergy(audioBuffer);
+
+    setProgress(70, 'Analyzing transitions…');
+    await delay(60);
+    const transitionData = detectTransitions(energyData, bpmData, audioBuffer.duration, audioBuffer);
+
+    setProgress(82, 'Checking gain & clipping…');
+    await delay(60);
+    const gainData = analyzeGain(audioBuffer);
+
+    setProgress(88, 'Scanning for dead air…');
+    await delay(60);
+    const silenceData = detectSilence(audioBuffer);
+
+    setProgress(94, 'Calculating scores…');
+    await delay(60);
+    const scores = scoreAll(bpmData, transitionData, energyData, gainData);
+
+    setProgress(100, 'Complete.');
+    await delay(300);
+
+    analysisData = { bpmData, energyData, transitionData, gainData, silenceData, scores, audioBuffer };
+
+    // Show file meta
+    document.getElementById('meta-name').textContent = file.name.length > 40 ? file.name.substring(0,40)+'…' : file.name;
+    document.getElementById('meta-dur').textContent = formatTime(audioBuffer.duration);
+    document.getElementById('meta-sr').textContent = audioBuffer.sampleRate.toLocaleString() + ' Hz';
+    document.getElementById('meta-ch').textContent = audioBuffer.numberOfChannels === 1 ? 'Mono' : 'Stereo';
+    document.getElementById('meta-size').textContent = formatBytes(file.size);
+    document.getElementById('file-meta').style.display = 'flex';
+
+    hidePanel('progress-panel');
+    renderResults(analysisData);
+
+  } catch (err) {
+    console.error(err);
+    alert('Error decoding audio: ' + err.message + '\n\nTry a different file format.');
+    resetApp();
+  }
+}
+
+function readFile(file) {
+  return new Promise((res, rej) => {
+    const reader = new FileReader();
+    reader.onload = e => res(e.target.result);
+    reader.onerror = rej;
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+// ── Zoom Interactions ──────────────────────────────────────
+let zoomListenersAttached = false;
+function setupZoomInteractions() {
+  if (zoomListenersAttached) return;
+  zoomListenersAttached = true;
+  const canvas = document.getElementById('energy-canvas');
+
+  canvas.addEventListener('mousedown', e => {
+    if (!analysisData) return;
+    dragState.dragging = true;
+    dragState.originX  = getCanvasX(canvas, e);
+    e.preventDefault();
+  });
+
+  canvas.addEventListener('mousemove', e => {
+    if (!dragState.dragging || !analysisData) return;
+    const x = getCanvasX(canvas, e);
+    // Redraw overview with live selection rect
+    const { energyData, transitionData, gainData, silenceData, audioBuffer } = analysisData;
+    renderEnergyTimeline(energyData, transitionData, gainData, silenceData, audioBuffer);
+    drawSelectionRect(canvas, dragState.originX, x);
+  });
+
+  canvas.addEventListener('mouseup', e => {
+    if (!analysisData) return;
+    const x = getCanvasX(canvas, e);
+    const duration = analysisData.audioBuffer.duration;
+    const W = canvas.width;
+
+    if (dragState.dragging) {
+      const x0 = dragState.originX;
+      const dist = Math.abs(x - x0);
+
+      if (dist < 6) {
+        // Click — zoom ±15s around click point
+        const t = (x / W) * duration;
+        const half = Math.min(15, duration / 4);
+        triggerZoom(Math.max(0, t - half), Math.min(duration, t + half));
+      } else {
+        // Drag — zoom selected range
+        const t0 = (Math.min(x0, x) / W) * duration;
+        const t1 = (Math.max(x0, x) / W) * duration;
+        if (t1 - t0 > 1) triggerZoom(t0, t1);
+      }
+    }
+
+    dragState.dragging = false;
+    dragState.originX  = null;
+  });
+
+  canvas.addEventListener('mouseleave', e => {
+    if (dragState.dragging) {
+      dragState.dragging = false;
+      dragState.originX  = null;
+      if (analysisData) {
+        const { energyData, transitionData, gainData, silenceData, audioBuffer } = analysisData;
+        renderEnergyTimeline(energyData, transitionData, gainData, silenceData, audioBuffer);
+      }
+    }
+  });
+}
+
+function getCanvasX(canvas, e) {
+  const rect = canvas.getBoundingClientRect();
+  return (e.clientX - rect.left) * (canvas.width / rect.width);
+}
+
+function drawSelectionRect(canvas, x0, x1) {
+  const ctx = canvas.getContext('2d');
+  const H = canvas.height;
+  const left  = Math.min(x0, x1);
+  const right = Math.max(x0, x1);
+  ctx.fillStyle   = 'rgba(201,168,76,0.12)';
+  ctx.fillRect(left, 0, right - left, H - 14);
+  ctx.strokeStyle = 'rgba(201,168,76,0.7)';
+  ctx.lineWidth   = 1;
+  ctx.strokeRect(left + 0.5, 0.5, right - left - 1, H - 15);
+}
+
+function triggerZoom(startT, endT) {
+  zoomState = { active: true, startT, endT };
+  const duration = analysisData.audioBuffer.duration;
+  const W = document.getElementById('energy-canvas').width;
+
+  // Redraw overview with permanent selection shading
+  const { energyData, transitionData, gainData, silenceData, audioBuffer } = analysisData;
+  renderEnergyTimeline(energyData, transitionData, gainData, silenceData, audioBuffer);
+  const x0 = (startT / duration) * W;
+  const x1 = (endT   / duration) * W;
+  drawSelectionRect(document.getElementById('energy-canvas'), x0, x1);
+
+  // Update infobar
+  document.getElementById('zoom-range').textContent =
+    `${formatTime(startT)}  →  ${formatTime(endT)}  (${(endT - startT).toFixed(1)}s)`;
+
+  // Find events in window
+  const trs = analysisData.transitionData.filter(t => t.time >= startT && t.time <= endT);
+  const sil = analysisData.silenceData.filter(s => s.start < endT && s.end > startT);
+  const parts = [];
+  if (trs.length > 0) parts.push(`${trs.length} transition${trs.length > 1 ? 's' : ''}`);
+  if (sil.length > 0) parts.push(`${sil.length} silence event${sil.length > 1 ? 's' : ''}`);
+  document.getElementById('zoom-events').textContent =
+    parts.length > 0 ? parts.join(' · ') + ' in this region' : 'No flagged events in this region';
+
+  document.getElementById('zoom-panel').style.display = 'block';
+  renderZoomCanvas(startT, endT);
+}
+
+function clearZoom() {
+  zoomState = { active: false, startT: null, endT: null };
+  document.getElementById('zoom-panel').style.display = 'none';
+  if (analysisData) {
+    const { energyData, transitionData, gainData, silenceData, audioBuffer } = analysisData;
+    renderEnergyTimeline(energyData, transitionData, gainData, silenceData, audioBuffer);
+  }
+}
+
+function renderZoomCanvas(startT, endT) {
+  const canvas = document.getElementById('zoom-canvas');
+  const parent = canvas.parentElement;
+  const W = parent.clientWidth;
+  const H = 120;
+  canvas.width  = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+
+  const { audioBuffer, transitionData, silenceData } = analysisData;
+  const sr       = audioBuffer.sampleRate;
+  const ch       = audioBuffer.getChannelData(0);
+  const startSmp = Math.floor(startT * sr);
+  const endSmp   = Math.min(Math.floor(endT * sr), ch.length);
+  const totalSmp = endSmp - startSmp;
+  const duration = endT - startT;
+
+  // ── Background ───────────────────────────────────────────
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.fillRect(0, 0, W, H);
+
+  // Background grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 1;
+  for (let i = 1; i < 4; i++) {
+    const y = (H * i) / 4;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+
+  // Time labels
+  const numLabels = Math.min(8, Math.floor(duration));
+  for (let i = 0; i <= numLabels; i++) {
+    const t = startT + (duration * i / numLabels);
+    const x = (i / numLabels) * W;
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.28)';
+    ctx.font = '9px Space Mono, monospace';
+    ctx.fillText(formatTime(t), x + 2, H - 4);
+  }
+
+  // ── Silence bands ────────────────────────────────────────
+  silenceData.forEach(s => {
+    const s0 = Math.max(s.start, startT);
+    const s1 = Math.min(s.end,   endT);
+    if (s1 <= s0) return;
+    const x0 = ((s0 - startT) / duration) * W;
+    const x1 = ((s1 - startT) / duration) * W;
+    ctx.fillStyle = 'rgba(232,148,76,0.15)';
+    ctx.fillRect(x0, 0, x1 - x0, H - 14);
+    ctx.fillStyle = 'rgba(232,148,76,0.6)';
+    ctx.fillRect(x0, 0, x1 - x0, 2);
+  });
+
+  // ── Full PCM waveform ────────────────────────────────────
+  const midY = (H - 14) / 2;
+  const waveH = midY * 0.88;
+  const step  = Math.max(1, Math.floor(totalSmp / W));
+
+  // Positive half
+  const gradPos = ctx.createLinearGradient(0, 0, 0, midY);
+  gradPos.addColorStop(0, 'rgba(201,168,76,0.9)');
+  gradPos.addColorStop(1, 'rgba(201,168,76,0.3)');
+
+  // Negative half (mirror)
+  const gradNeg = ctx.createLinearGradient(0, midY, 0, midY * 2);
+  gradNeg.addColorStop(0, 'rgba(201,168,76,0.3)');
+  gradNeg.addColorStop(1, 'rgba(201,168,76,0.9)');
+
+  ctx.fillStyle = gradPos;
+  for (let px = 0; px < W; px++) {
+    const smpStart = startSmp + Math.floor((px / W) * totalSmp);
+    const smpEnd   = Math.min(smpStart + step, endSmp);
+    let max = 0;
+    for (let j = smpStart; j < smpEnd; j++) {
+      const abs = Math.abs(ch[j]);
+      if (abs > max) max = abs;
+    }
+    const barH = max * waveH;
+    ctx.fillRect(px, midY - barH, 1, barH);
+  }
+  ctx.fillStyle = gradNeg;
+  for (let px = 0; px < W; px++) {
+    const smpStart = startSmp + Math.floor((px / W) * totalSmp);
+    const smpEnd   = Math.min(smpStart + step, endSmp);
+    let max = 0;
+    for (let j = smpStart; j < smpEnd; j++) {
+      const abs = Math.abs(ch[j]);
+      if (abs > max) max = abs;
+    }
+    const barH = max * waveH;
+    ctx.fillRect(px, midY, 1, barH);
+  }
+
+  // Centre line
+  ctx.strokeStyle = 'rgba(201,168,76,0.25)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(0, midY); ctx.lineTo(W, midY); ctx.stroke();
+
+  // ── Transition markers ───────────────────────────────────
+  transitionData.forEach(tr => {
+    if (tr.time < startT || tr.time > endT) return;
+    const x = ((tr.time - startT) / duration) * W;
+    const { color } = gradeFromScore(tr.grade);
+
+    ctx.strokeStyle = 'rgba(76,140,232,0.8)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 3]);
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H - 18); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Grade bubble
+    ctx.fillStyle = 'rgba(76,140,232,0.9)';
+    ctx.beginPath();
+    ctx.moveTo(x,     H - 16);
+    ctx.lineTo(x - 6, H - 8);
+    ctx.lineTo(x + 6, H - 8);
+    ctx.closePath();
+    ctx.fill();
+
+    // Grade text above marker
+    ctx.fillStyle = 'rgba(76,140,232,1)';
+    ctx.font = 'bold 9px Space Mono, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(gradeFromScore(tr.grade).letter, x, 10);
+    ctx.textAlign = 'left';
+
+    // BPM label if available
+    if (tr.bpmBefore > 0 && tr.bpmAfter > 0) {
+      ctx.fillStyle = 'rgba(255,255,255,0.45)';
+      ctx.font = '8px Space Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${tr.bpmBefore}→${tr.bpmAfter}`, x, 22);
+      ctx.textAlign = 'left';
+    }
+  });
+}
+function analyzeEnergy(audioBuffer) {
+  const sr = audioBuffer.sampleRate;
+  const ch = audioBuffer.getChannelData(0);
+  const windowSec = 0.5;
+  const hopSec = 0.25;
+  const windowSize = Math.floor(sr * windowSec);
+  const hopSize = Math.floor(sr * hopSec);
+  const windows = [];
+
+  for (let i = 0; i + windowSize < ch.length; i += hopSize) {
+    let rms = 0;
+    for (let j = i; j < i + windowSize; j++) rms += ch[j] * ch[j];
+    rms = Math.sqrt(rms / windowSize);
+    windows.push({ time: i / sr, rms });
+  }
+  return windows;
+}
+
+// ── Analysis: BPM (Autocorrelation) ───────────────────────
+function analyzeBPM(audioBuffer) {
+  const sr = audioBuffer.sampleRate;
+  const ch = audioBuffer.getChannelData(0);
+
+  // Downsample for speed
+  const step = 4;
+  const n = Math.min(Math.floor(sr * 60), ch.length);
+  const buf = [];
+  for (let i = 0; i < n; i += step) buf.push(ch[i]);
+
+  // Build onset envelope
+  const envWindow = 512;
+  const envelope = [];
+  for (let i = 0; i + envWindow < buf.length; i += envWindow) {
+    let rms = 0;
+    for (let j = i; j < i + envWindow; j++) rms += buf[j] * buf[j];
+    envelope.push(Math.sqrt(rms / envWindow));
+  }
+
+  // Autocorrelation on envelope to find tempo
+  const minBPM = 60, maxBPM = 180;
+  const frameSec = (step * envWindow) / sr;
+  const minLag = Math.floor(60 / (maxBPM * frameSec));
+  const maxLag = Math.ceil(60 / (minBPM * frameSec));
+
+  let bestScore = -Infinity, bestLag = minLag;
+  for (let lag = minLag; lag <= maxLag; lag++) {
+    let score = 0;
+    const N = envelope.length - lag;
+    for (let i = 0; i < N; i++) score += envelope[i] * envelope[i + lag];
+    score /= N;
+    if (score > bestScore) { bestScore = score; bestLag = lag; }
+  }
+
+  const bpm = Math.round(60 / (bestLag * frameSec));
+  const confidence = Math.min(100, Math.max(0, Math.round((bestScore / (envelope.reduce((a,b) => a+b*b,0)/envelope.length)) * 80)));
+
+  return { bpm, confidence };
+}
+
+// ── Analysis: Per-segment BPM ─────────────────────────────
+function segmentBPM(ch, sr, startSec, durationSec) {
+  const start = Math.floor(startSec * sr);
+  const len = Math.min(Math.floor(durationSec * sr), ch.length - start);
+  if (len < sr * 4) return 0; // segment too short
+
+  const step = 4;
+  const buf = [];
+  for (let i = start; i < start + len; i += step) buf.push(ch[i]);
+
+  const envWindow = 512;
+  const envelope = [];
+  for (let i = 0; i + envWindow < buf.length; i += envWindow) {
+    let rms = 0;
+    for (let j = i; j < i + envWindow; j++) rms += buf[j] * buf[j];
+    envelope.push(Math.sqrt(rms / envWindow));
+  }
+  if (envelope.length < 8) return 0;
+
+  const frameSec = (step * envWindow) / sr;
+  const minBPM = 60, maxBPM = 180;
+  const minLag = Math.max(1, Math.floor(60 / (maxBPM * frameSec)));
+  const maxLag = Math.min(envelope.length - 1, Math.ceil(60 / (minBPM * frameSec)));
+
+  let bestScore = -Infinity, bestLag = minLag;
+  for (let lag = minLag; lag <= maxLag; lag++) {
+    let score = 0;
+    const N = envelope.length - lag;
+    for (let i = 0; i < N; i++) score += envelope[i] * envelope[i + lag];
+    score /= N;
+    if (score > bestScore) { bestScore = score; bestLag = lag; }
+  }
+  return Math.round(60 / (bestLag * frameSec));
+}
+
+function octaveCorrect(bpmA, bpmB) {
+  // Normalize bpmB to same octave range as bpmA
+  if (!bpmA || !bpmB) return bpmB;
+  let b = bpmB;
+  if (b > bpmA * 1.7) b = Math.round(b / 2);
+  else if (b < bpmA * 0.6) b = Math.round(b * 2);
+  return b;
+}
+
+// ── Analysis: Transitions ──────────────────────────────────
+function detectTransitions(energyWindows, bpmData, totalDuration, audioBuffer) {
+  if (energyWindows.length < 6) return [];
+
+  const ch = audioBuffer.getChannelData(0);
+  const sr = audioBuffer.sampleRate;
+
+  const rmsValues = energyWindows.map(w => w.rms);
+  const mean = rmsValues.reduce((a,b) => a+b,0) / rmsValues.length;
+  const std = Math.sqrt(rmsValues.map(v => (v-mean)**2).reduce((a,b)=>a+b,0)/rmsValues.length);
+
+  const threshold = mean - std * 0.6;
+  const transitions = [];
+  let lastTransition = -30;
+  const minGap = 30;
+
+  for (let i = 2; i < energyWindows.length - 2; i++) {
+    const w = energyWindows[i];
+    const local_min = w.rms < energyWindows[i-1].rms &&
+                      w.rms < energyWindows[i+1].rms &&
+                      w.rms < threshold;
+
+    if (local_min && w.time - lastTransition > minGap) {
+      const beforeEnergy = energyWindows[Math.max(0,i-4)].rms;
+      const afterEnergy  = energyWindows[Math.min(energyWindows.length-1,i+4)].rms;
+      const dip = (beforeEnergy - w.rms) / (beforeEnergy + 0.001);
+
+      let type = 'blend';
+      if (dip > 0.5) type = 'cut';
+      else if (dip > 0.25) type = 'quick';
+
+      let dipStart = i, dipEnd = i;
+      while (dipStart > 0 && energyWindows[dipStart].rms < beforeEnergy * 0.85) dipStart--;
+      while (dipEnd < energyWindows.length-1 && energyWindows[dipEnd].rms < afterEnergy * 0.85) dipEnd++;
+      const blendDuration = (dipEnd - dipStart) * 0.25;
+
+      // ── Real per-segment BPM ──────────────────────────────
+      const lookSec = 22; // seconds of audio to analyze on each side
+      const preStart  = Math.max(0, w.time - lookSec - 2);
+      const postStart = Math.min(totalDuration - lookSec, w.time + 2);
+      const bpmBefore = segmentBPM(ch, sr, preStart,  Math.min(lookSec, w.time));
+      const bpmAfter  = segmentBPM(ch, sr, postStart, Math.min(lookSec, totalDuration - postStart));
+      const bpmAfterCorrected = octaveCorrect(bpmBefore, bpmAfter);
+      const bpmDrift  = (bpmBefore > 0 && bpmAfterCorrected > 0) ? bpmAfterCorrected - bpmBefore : 0;
+
+      // Grade based on transition type, dip depth, and real BPM drift
+      let grade = 85;
+      if (type === 'cut')        grade = 52 + Math.random() * 18;
+      else if (type === 'quick') grade = 66 + Math.random() * 16;
+      else                       grade = 76 + Math.random() * 16;
+
+      if (Math.abs(bpmDrift) >= 4) grade -= 15;
+      else if (Math.abs(bpmDrift) === 3) grade -= 8;
+      else if (Math.abs(bpmDrift) === 2) grade -= 4;
+      grade = Math.round(Math.max(0, Math.min(100, grade)));
+
+      transitions.push({
+        time: w.time, type, blendDuration: Math.max(1, Math.round(blendDuration)),
+        bpmBefore, bpmAfter: bpmAfterCorrected, bpmDrift, grade, dipDepth: dip
+      });
+
+      lastTransition = w.time;
+    }
+  }
+
+  return transitions;
+}
+
+// ── Analysis: Gain & Clipping ──────────────────────────────
+function analyzeGain(audioBuffer) {
+  const ch = audioBuffer.getChannelData(0);
+  let clipCount = 0;
+  let sumSq = 0;
+  const clipThreshold = 0.99;
+  const clipTimes = [];
+
+  const sr = audioBuffer.sampleRate;
+  for (let i = 0; i < ch.length; i++) {
+    const s = Math.abs(ch[i]);
+    sumSq += s * s;
+    if (s >= clipThreshold) {
+      clipCount++;
+      if (clipTimes.length < 100) clipTimes.push(i / sr);
+    }
+  }
+
+  const rms = Math.sqrt(sumSq / ch.length);
+  const lufs = Math.round(20 * Math.log10(rms + 0.0001));
+  const clipRatio = clipCount / ch.length;
+
+  return { clipCount, clipRatio, clipTimes, rms, lufs };
+}
+
+// ── Analysis: Silence / Dead Air ──────────────────────────
+function detectSilence(audioBuffer) {
+  const sr = audioBuffer.sampleRate;
+  const ch = audioBuffer.getChannelData(0);
+  const genre = currentGenre();
+  const threshold = GENRE_PRESETS[genre].silenceThreshold;
+
+  const windowSec = 0.5;
+  const windowSize = Math.floor(sr * windowSec);
+  const events = [];
+  let silenceStart = null;
+
+  for (let i = 0; i + windowSize < ch.length; i += windowSize) {
+    let rms = 0;
+    for (let j = i; j < i + windowSize; j++) rms += ch[j] * ch[j];
+    rms = Math.sqrt(rms / windowSize);
+    const t = i / sr;
+
+    if (rms < threshold) {
+      if (silenceStart === null) silenceStart = t;
+    } else {
+      if (silenceStart !== null) {
+        const duration = t - silenceStart;
+        if (duration >= 1.5) {
+          events.push({ start: silenceStart, end: t, duration });
+        }
+        silenceStart = null;
+      }
+    }
+  }
+  // Catch trailing silence
+  if (silenceStart !== null) {
+    const duration = audioBuffer.duration - silenceStart;
+    if (duration >= 1.5) events.push({ start: silenceStart, end: audioBuffer.duration, duration });
+  }
+  return events;
+}
+
+// ── Waveform Downsampler ───────────────────────────────────
+function buildWaveform(audioBuffer, numPoints) {
+  const ch = audioBuffer.getChannelData(0);
+  const blockSize = Math.floor(ch.length / numPoints);
+  const peaks = [];
+  for (let i = 0; i < numPoints; i++) {
+    let max = 0;
+    const start = i * blockSize;
+    for (let j = start; j < start + blockSize && j < ch.length; j++) {
+      const abs = Math.abs(ch[j]);
+      if (abs > max) max = abs;
+    }
+    peaks.push(max);
+  }
+  return peaks;
+}
+
+// ── Scoring ────────────────────────────────────────────────
+function getWeights() {
+  const raw = {
+    transitions: parseFloat(document.getElementById('w-transitions').value),
+    energy:      parseFloat(document.getElementById('w-energy').value),
+    gain:        parseFloat(document.getElementById('w-gain').value),
+    bpm:         parseFloat(document.getElementById('w-bpm').value)
+  };
+  const total = raw.transitions + raw.energy + raw.gain + raw.bpm;
+  if (total === 0) return { transitions:0.35, energy:0.25, gain:0.2, bpm:0.2 };
+  return {
+    transitions: raw.transitions / total,
+    energy:      raw.energy      / total,
+    gain:        raw.gain        / total,
+    bpm:         raw.bpm         / total
+  };
+}
+
+function updateWeightDisplay() {
+  const sliders = ['transitions','energy','gain','bpm'];
+  const vals = sliders.map(k => parseFloat(document.getElementById('w-'+k).value));
+  const total = vals.reduce((a,b)=>a+b,0);
+  sliders.forEach((k,i) => {
+    const pct = total > 0 ? Math.round((vals[i]/total)*100) : 0;
+    document.getElementById('wpct-'+k).textContent = pct + '%';
+  });
+  document.getElementById('weights-sum-display').textContent = '100%';
+}
+
+function resetWeights() {
+  document.getElementById('w-transitions').value = 35;
+  document.getElementById('w-energy').value      = 25;
+  document.getElementById('w-gain').value        = 20;
+  document.getElementById('w-bpm').value         = 20;
+  updateWeightDisplay();
+}
+
+function recalculateScores() {
+  if (!analysisData) return;
+  const { bpmData, transitionData, energyData, gainData, silenceData, audioBuffer } = analysisData;
+  const scores = scoreAll(bpmData, transitionData, energyData, gainData);
+  analysisData.scores = scores;
+
+  const { letter, color } = gradeFromScore(scores.overall);
+  const el = document.getElementById('overall-letter');
+  el.textContent = letter;
+  el.style.color = color;
+  document.getElementById('overall-number').textContent = scores.overall + ' / 100';
+
+  renderSubscores(scores);
+  renderInsights(scores, transitionData, gainData, silenceData, bpmData, audioBuffer.duration);
+}
+
+function scoreAll(bpmData, transitions, energyData, gainData) {
+  const w = getWeights();
+
+  // Transition score
+  let transitionScore = 75;
+  if (transitions.length > 0) {
+    const avg = transitions.reduce((a,t) => a+t.grade,0) / transitions.length;
+    transitionScore = Math.round(avg);
+  }
+
+  // Energy arc score
+  const rmsVals = energyData.map(w => w.rms);
+  const mean = rmsVals.reduce((a,b)=>a+b,0)/rmsVals.length;
+  const variance = rmsVals.map(v=>(v-mean)**2).reduce((a,b)=>a+b,0)/rmsVals.length;
+  const cv = Math.sqrt(variance) / (mean + 0.001);
+
+  let energyScore = 70;
+  if (cv > 0.05 && cv < 0.35) energyScore = 85;
+  else if (cv <= 0.05) energyScore = 55;
+  else if (cv > 0.35) energyScore = 65;
+  energyScore = Math.round(energyScore);
+
+  // Gain / Clip score
+  let gainScore = 100;
+  const clipPct = gainData.clipRatio * 100;
+  if (clipPct > 0.5) gainScore -= 40;
+  else if (clipPct > 0.1) gainScore -= 20;
+  else if (clipPct > 0.02) gainScore -= 8;
+  if (gainData.lufs < -18) gainScore -= 10;
+  if (gainData.lufs > -6) gainScore -= 15;
+  gainScore = Math.round(Math.max(0, gainScore));
+
+  // BPM consistency — now uses real drift data
+  let bpmScore = bpmData.confidence > 70 ? 88 : bpmData.confidence > 40 ? 72 : 55;
+  const bigDrifts = transitions.filter(t => Math.abs(t.bpmDrift) >= 4).length;
+  const medDrifts = transitions.filter(t => Math.abs(t.bpmDrift) === 3).length;
+  bpmScore -= bigDrifts * 10;
+  bpmScore -= medDrifts * 4;
+  bpmScore = Math.round(Math.max(0, bpmScore));
+
+  // Weighted overall using current slider weights
+  const overall = Math.round(
+    transitionScore * w.transitions +
+    energyScore     * w.energy +
+    gainScore       * w.gain +
+    bpmScore        * w.bpm
+  );
+
+  return { transitionScore, energyScore, gainScore, bpmScore, overall, weights: w };
+}
+
+// ── Render ─────────────────────────────────────────────────
+function renderSubscores(scores) {
+  const subDefs = [
+    { key:'transitionScore', name:'Transitions',     wkey:'transitions' },
+    { key:'energyScore',     name:'Energy arc',      wkey:'energy'      },
+    { key:'gainScore',       name:'Gain / clip',     wkey:'gain'        },
+    { key:'bpmScore',        name:'BPM consistency', wkey:'bpm'         }
+  ];
+  const w = scores.weights || { transitions:0.35, energy:0.25, gain:0.20, bpm:0.20 };
+  const container = document.getElementById('subscores');
+  container.innerHTML = '';
+  subDefs.forEach(def => {
+    const val = scores[def.key];
+    const { letter: sl, color: sc } = gradeFromScore(val);
+    const wPct = Math.round((w[def.wkey] || 0) * 100);
+    const div = document.createElement('div');
+    div.className = 'subscore-card';
+    div.innerHTML = `
+      <div class="subscore-name">${def.name} <span style="opacity:0.5">(${wPct}%)</span></div>
+      <div class="subscore-bar-wrap">
+        <div class="subscore-bar-fill" style="width:0%;background:${sc}" data-width="${val}"></div>
+      </div>
+      <div class="subscore-row">
+        <span class="subscore-value" style="color:${sc}">${val}</span>
+        <span class="subscore-grade" style="color:${sc}">${sl}</span>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.subscore-bar-fill').forEach(el => {
+      el.style.width = el.dataset.width + '%';
+    });
+  });
+}
+
+function renderResults({ scores, transitionData, energyData, gainData, silenceData, bpmData, audioBuffer }) {
+  document.getElementById('results').style.display = 'block';
+
+  // Overall grade
+  const { letter, color } = gradeFromScore(scores.overall);
+  const el = document.getElementById('overall-letter');
+  el.textContent = letter;
+  el.style.color = color;
+  document.getElementById('overall-number').textContent = scores.overall + ' / 100';
+
+  // Subscores
+  renderSubscores(scores);
+
+  // Energy timeline (now includes waveform + silence)
+  renderEnergyTimeline(energyData, transitionData, gainData, silenceData, audioBuffer);
+
+  // Transitions table
+  renderTransitionsTable(transitionData, bpmData);
+
+  // Dead air table
+  renderDeadAirTable(silenceData, audioBuffer.duration);
+
+  // Insights
+  renderInsights(scores, transitionData, gainData, silenceData, bpmData, audioBuffer.duration);
+
+  // Wire up zoom interactions (idempotent via flag)
+  setupZoomInteractions();
+}
+
+function renderEnergyTimeline(energyData, transitions, gainData, silenceData, audioBuffer) {
+  const duration = audioBuffer.duration;
+  const canvas = document.getElementById('energy-canvas');
+  const parent = canvas.parentElement;
+  const W = parent.clientWidth - 40;
+  const H = 150;
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+
+  // ── Background grid ──────────────────────────────────────
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = (H * i) / 4;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+  const gridLines = 6;
+  for (let i = 0; i <= gridLines; i++) {
+    const x = (W * i) / gridLines;
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.22)';
+    ctx.font = '9px Space Mono, monospace';
+    ctx.fillText(formatTime(duration * i / gridLines), x + 2, H - 4);
+  }
+
+  // ── Dead air bands (drawn first, behind everything) ──────
+  silenceData.forEach(s => {
+    const x1 = (s.start / duration) * W;
+    const x2 = (s.end   / duration) * W;
+    ctx.fillStyle = 'rgba(232,148,76,0.12)';
+    ctx.fillRect(x1, 0, Math.max(x2 - x1, 2), H - 14);
+    // Top border line
+    ctx.fillStyle = 'rgba(232,148,76,0.5)';
+    ctx.fillRect(x1, 0, Math.max(x2 - x1, 2), 2);
+  });
+
+  // ── Waveform (mirrored peak, muted) ─────────────────────
+  const numPoints = Math.min(W, 2400);
+  const peaks = buildWaveform(audioBuffer, numPoints);
+  const waveH = (H - 14) / 2;
+  const midY  = waveH;
+
+  ctx.fillStyle = 'rgba(255,255,255,0.07)';
+  peaks.forEach((peak, i) => {
+    const x = (i / numPoints) * W;
+    const barH = peak * waveH * 0.92;
+    ctx.fillRect(x, midY - barH, W / numPoints + 0.5, barH * 2);
+  });
+
+  // ── Energy fill ──────────────────────────────────────────
+  const rmsVals = energyData.map(w => w.rms);
+  const maxRMS = Math.max(...rmsVals) * 1.1 || 1;
+
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, 'rgba(201,168,76,0.65)');
+  grad.addColorStop(1, 'rgba(201,168,76,0.04)');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.moveTo(0, H - 14);
+  energyData.forEach((w, i) => {
+    const x = (w.time / duration) * W;
+    const y = (H - 14) - (w.rms / maxRMS) * (H - 28);
+    i === 0 ? ctx.lineTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.lineTo(W, H - 14);
+  ctx.closePath();
+  ctx.fill();
+
+  // Energy line
+  ctx.strokeStyle = 'rgba(201,168,76,0.9)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  energyData.forEach((w, i) => {
+    const x = (w.time / duration) * W;
+    const y = (H - 14) - (w.rms / maxRMS) * (H - 28);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // ── Clip events ──────────────────────────────────────────
+  gainData.clipTimes.slice(0, 80).forEach(t => {
+    const x = (t / duration) * W;
+    ctx.fillStyle = 'rgba(232,92,76,0.75)';
+    ctx.fillRect(x - 0.5, 0, 1.5, H - 14);
+  });
+
+  // ── Silence markers (label) ──────────────────────────────
+  silenceData.forEach(s => {
+    const x1 = (s.start / duration) * W;
+    const x2 = (s.end   / duration) * W;
+    const mid = (x1 + x2) / 2;
+    if (x2 - x1 > 18) {
+      ctx.fillStyle = 'rgba(232,148,76,0.85)';
+      ctx.font = '8px Space Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('▼', mid, 12);
+      ctx.textAlign = 'left';
+    }
+  });
+
+  // ── Transition markers ───────────────────────────────────
+  transitions.forEach(tr => {
+    const x = (tr.time / duration) * W;
+    ctx.strokeStyle = 'rgba(76,140,232,0.7)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H - 22); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(76,140,232,0.9)';
+    ctx.beginPath();
+    ctx.moveTo(x,     H - 20);
+    ctx.lineTo(x - 5, H - 12);
+    ctx.lineTo(x + 5, H - 12);
+    ctx.closePath();
+    ctx.fill();
+  });
+}
+
+function renderTransitionsTable(transitions, bpmData) {
+  const tbody = document.getElementById('transitions-body');
+  tbody.innerHTML = '';
+
+  if (transitions.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="color:var(--text-dim);font-style:italic;text-align:center;padding:24px">No clear transitions detected — mix may be continuous or very long.</td></tr>';
+    return;
+  }
+
+  transitions.forEach((tr, i) => {
+    const { letter, color, bg } = gradeFromScore(tr.grade);
+    const typeLabel = { blend:'Blend', cut:'Hard cut', quick:'Quick mix' }[tr.type] || tr.type;
+
+    // BPM display
+    let bpmDisplay, bpmColor;
+    if (tr.bpmBefore > 0 && tr.bpmAfter > 0) {
+      const drift = Math.abs(tr.bpmDrift);
+      bpmColor = drift >= 4 ? 'var(--red)' : drift >= 2 ? 'var(--orange)' : 'var(--green)';
+      const arrow = tr.bpmDrift === 0 ? '→' : (tr.bpmDrift > 0 ? '↑' : '↓');
+      bpmDisplay = `<span style="color:var(--text-mid)">${tr.bpmBefore}</span> <span style="color:var(--text-dim)">${arrow}</span> <span style="color:${bpmColor}">${tr.bpmAfter}</span>`;
+    } else {
+      bpmColor = 'var(--text-dim)';
+      bpmDisplay = `<span style="color:var(--text-dim)">—</span>`;
+    }
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td style="font-family:var(--mono);color:var(--text-dim);font-size:11px">${i+1}</td>
+      <td style="font-family:var(--mono);font-size:12px">${formatTime(tr.time)}</td>
+      <td><span class="type-chip">${typeLabel}</span></td>
+      <td style="color:var(--text-mid)">${tr.blendDuration}s</td>
+      <td style="font-family:var(--mono);font-size:12px">${bpmDisplay}</td>
+      <td><span class="grade-chip" style="color:${color};background:${bg}">${letter} · ${tr.grade}</span></td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+function renderDeadAirTable(silenceData, duration) {
+  const section = document.getElementById('dead-air-section');
+  const tbody   = document.getElementById('dead-air-body');
+  tbody.innerHTML = '';
+
+  if (silenceData.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+
+  section.style.display = 'block';
+
+  silenceData.forEach((s, i) => {
+    const sev = s.duration >= 5 ? { label:'Critical', color:'var(--red)',    bg:'rgba(232,92,76,0.15)'  }
+              : s.duration >= 3 ? { label:'Major',    color:'var(--orange)', bg:'rgba(232,148,76,0.15)' }
+              :                   { label:'Minor',    color:'var(--yellow)', bg:'rgba(232,200,76,0.12)' };
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td style="font-family:var(--mono);color:var(--text-dim);font-size:11px">${i+1}</td>
+      <td style="font-family:var(--mono);font-size:12px">${formatTime(s.start)}</td>
+      <td style="font-family:var(--mono);font-size:12px">${formatTime(s.end)}</td>
+      <td style="font-family:var(--mono);color:var(--text-mid)">${s.duration.toFixed(1)}s</td>
+      <td><span class="severity-chip" style="color:${sev.color};background:${sev.bg}">${sev.label}</span></td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+function renderInsights(scores, transitions, gainData, silenceData, bpmData, duration) {
+  const list = document.getElementById('insights-list');
+  list.innerHTML = '';
+  const insights = [];
+
+  // Genre context
+  const genre = currentGenre();
+  const genreLabels = { open:'Open Format', rnb:'R&B / Hip-Hop', house:'House / Techno', dnb:'Drum & Bass', ambient:'Ambient / Downtempo' };
+  insights.push({ cls:'', text:`Analysis mode: <strong>${genreLabels[genre]}</strong> — scoring weights and silence thresholds adjusted for this genre.` });
+
+  // BPM
+  if (bpmData.bpm) insights.push({
+    cls: bpmData.confidence > 60 ? 'good' : 'warn',
+    text: `Detected tempo: <strong>${bpmData.bpm} BPM</strong> (confidence: ${bpmData.confidence}%). ${bpmData.confidence < 50 ? 'Low confidence may indicate tempo changes or inconsistent beatmatching.' : 'Consistent tempo detected throughout the mix.'}`
+  });
+
+  // Transitions
+  if (transitions.length === 0) {
+    insights.push({ cls:'warn', text:'No distinct transitions detected. This may be a continuous mix with very smooth blending, or a single-track recording.' });
+  } else {
+    const avgGrade = Math.round(transitions.reduce((a,t)=>a+t.grade,0)/transitions.length);
+    const cuts = transitions.filter(t=>t.type==='cut').length;
+    const bigDrifts = transitions.filter(t=>Math.abs(t.bpmDrift)>=4).length;
+    insights.push({
+      cls: avgGrade >= 80 ? 'good' : avgGrade >= 65 ? '' : 'bad',
+      text: `Found <strong>${transitions.length} transitions</strong> averaging ${avgGrade}/100. ${cuts > 0 ? cuts + ' hard cut(s) detected.' : 'No hard cuts — consistent blending style.'} ${bigDrifts > 0 ? bigDrifts + ' transition(s) had significant BPM drift (4+ BPM).' : ''}`
+    });
+
+    const worst = transitions.reduce((a,b) => a.grade < b.grade ? a : b);
+    if (worst.grade < 70) {
+      const bpmNote = worst.bpmBefore > 0 && worst.bpmAfter > 0
+        ? ` BPM shifted from ${worst.bpmBefore} to ${worst.bpmAfter}.`
+        : '';
+      insights.push({
+        cls:'warn',
+        text: `Weakest transition at <strong>${formatTime(worst.time)}</strong> — scored ${worst.grade}/100 (${worst.type}).${bpmNote} ${worst.type==='cut' ? 'Hard cuts can be jarring if not rhythmically aligned.' : 'Consider a longer blend or better energy matching at this point.'}`
+      });
+    }
+  }
+
+  // Gain
+  if (gainData.clipRatio > 0.001) {
+    insights.push({
+      cls:'bad',
+      text: `Clipping detected — <strong>${gainData.clipCount.toLocaleString()} samples</strong> hit 0dBFS (${(gainData.clipRatio*100).toFixed(3)}% of file). This indicates gain staging issues or over-compression in the recording chain.`
+    });
+  } else {
+    insights.push({ cls:'good', text:'No significant clipping detected. Gain staging looks clean.' });
+  }
+
+  if (gainData.lufs < -18) insights.push({ cls:'warn', text:`Mix is relatively quiet at ${gainData.lufs} LUFS. This may be fine for a dynamic recording, but platforms like Mixcloud normalize to around -14 LUFS on playback.` });
+  if (gainData.lufs > -6) insights.push({ cls:'bad', text:`Mix is very loud at ${gainData.lufs} LUFS. This level of loudness often indicates heavy limiting or clipping — check your recording gain.` });
+
+  // Dead air / silence
+  if (silenceData.length === 0) {
+    insights.push({ cls:'good', text:'No dead air detected — mix maintains continuous audio throughout.' });
+  } else {
+    const totalSilenceSec = silenceData.reduce((a,s) => a + s.duration, 0);
+    const criticals = silenceData.filter(s => s.duration >= 5).length;
+    insights.push({
+      cls: criticals > 0 ? 'bad' : 'warn',
+      text: `<strong>${silenceData.length} silence event${silenceData.length > 1 ? 's' : ''}</strong> detected totalling ${totalSilenceSec.toFixed(1)}s of dead air. ${criticals > 0 ? criticals + ' critical event(s) over 5 seconds — see Dead Air table below.' : 'See Dead Air table below for timestamps.'}`
+    });
+  }
+
+  // Energy arc
+  if (scores.energyScore >= 80) insights.push({ cls:'good', text:'Good dynamic range in the energy arc — the mix has natural rise and fall rather than sitting at a flat level throughout.' });
+  else if (scores.energyScore < 60) insights.push({ cls:'warn', text:'Energy arc is either very flat (possible over-limiting) or erratic (rapid level changes). A well-programmed mix typically builds and breathes over its runtime.' });
+
+  // Duration
+  const mins = duration / 60;
+  if (mins < 30) insights.push({ cls:'warn', text:`Mix duration is ${Math.round(mins)} minutes — shorter than a typical DJ set. Analysis may be less reliable on short recordings.` });
+  else insights.push({ cls:'good', text:`Mix duration: ${formatTime(duration)} — sufficient length for reliable analysis.` });
+
+  insights.forEach(ins => {
+    const div = document.createElement('div');
+    div.className = `insight-item ${ins.cls}`;
+    div.innerHTML = ins.text;
+    list.appendChild(div);
+  });
+}
+
+// ── Helpers ────────────────────────────────────────────────
+function gradeFromScore(score) {
+  if (score >= 90) return { letter:'A+', color:'var(--green)', bg:'rgba(76,175,122,0.12)' };
+  if (score >= 85) return { letter:'A',  color:'var(--green)', bg:'rgba(76,175,122,0.12)' };
+  if (score >= 80) return { letter:'A-', color:'var(--green)', bg:'rgba(76,175,122,0.12)' };
+  if (score >= 75) return { letter:'B+', color:'var(--yellow)', bg:'rgba(232,200,76,0.12)' };
+  if (score >= 70) return { letter:'B',  color:'var(--yellow)', bg:'rgba(232,200,76,0.12)' };
+  if (score >= 65) return { letter:'B-', color:'var(--yellow)', bg:'rgba(232,200,76,0.12)' };
+  if (score >= 60) return { letter:'C+', color:'var(--orange)', bg:'rgba(232,148,76,0.12)' };
+  if (score >= 55) return { letter:'C',  color:'var(--orange)', bg:'rgba(232,148,76,0.12)' };
+  if (score >= 50) return { letter:'C-', color:'var(--orange)', bg:'rgba(232,148,76,0.12)' };
+  if (score >= 45) return { letter:'D',  color:'var(--red)', bg:'rgba(232,92,76,0.12)' };
+  return                { letter:'F',  color:'var(--red)', bg:'rgba(232,92,76,0.12)' };
+}
+
+function formatTime(secs) {
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  const s = Math.floor(secs % 60);
+  if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+function formatBytes(bytes) {
+  if (bytes < 1024*1024) return Math.round(bytes/1024) + ' KB';
+  return (bytes/(1024*1024)).toFixed(1) + ' MB';
+}
+
+function setProgress(pct, label) {
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('progress-step').textContent = label;
+}
+
+function showPanel(id) { document.getElementById(id).style.display = 'block'; }
+function hidePanel(id) { document.getElementById(id).style.display = 'none'; }
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function resetApp() {
+  document.getElementById('drop-zone').style.display = 'block';
+  document.getElementById('progress-panel').style.display = 'none';
+  document.getElementById('file-meta').style.display = 'none';
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('dead-air-section').style.display = 'none';
+  document.getElementById('zoom-panel').style.display = 'none';
+  document.getElementById('file-input').value = '';
+  document.getElementById('genre-select').value = 'open';
+  document.getElementById('genre-hint').textContent = 'balanced weights';
+  zoomState = { active: false, startT: null, endT: null };
+  dragState = { dragging: false, originX: null };
+  if (audioCtx) { audioCtx.close(); audioCtx = null; }
+  analysisData = null;
+}
+// ── About ──────────────────────────────────────────────────
+function openAbout() {
+  document.getElementById('about-modal').classList.add('open');
+}
+
+function closeAbout() {
+  document.getElementById('about-modal').classList.remove('open');
+}
+
+function onAboutOverlayClick(e) {
+  if (e.target === document.getElementById('about-modal')) closeAbout();
+}
+
+// ── Export ─────────────────────────────────────────────────
+function openExportModal() {
+  if (!analysisData) return;
+  document.getElementById('export-modal').classList.add('open');
+}
+
+function closeExportModal() {
+  document.getElementById('export-modal').classList.remove('open');
+}
+
+function onModalOverlayClick(e) {
+  if (e.target === document.getElementById('export-modal')) closeExportModal();
+}
+
+function selectFormat(fmt) {
+  document.querySelectorAll('.format-option').forEach(el => {
+    el.classList.toggle('selected', el.querySelector('input').value === fmt);
+  });
+  document.querySelector(`input[value="${fmt}"]`).checked = true;
+}
+
+function doExport() {
+  const fmt = document.querySelector('input[name="export-fmt"]:checked').value;
+  const { scores, transitionData, energyData, gainData, silenceData, bpmData, audioBuffer } = analysisData;
+  const filename = (document.getElementById('meta-name').textContent || 'mix').replace(/\.[^.]+$/, '');
+  const date = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  const genre = currentGenre();
+  const genreLabels = { open:'Open Format', rnb:'R&B / Hip-Hop', house:'House / Techno', dnb:'Drum & Bass', ambient:'Ambient / Downtempo' };
+
+  if (fmt === 'txt') downloadBlob(buildTxtReport({ scores, transitionData, gainData, silenceData, bpmData, audioBuffer, filename, date, genre: genreLabels[genre] }), `${filename}-mix-grade.txt`, 'text/plain');
+  else if (fmt === 'html') downloadBlob(buildHtmlReport({ scores, transitionData, gainData, silenceData, bpmData, audioBuffer, filename, date, genre: genreLabels[genre] }), `${filename}-mix-grade.html`, 'text/html');
+  else if (fmt === 'json') downloadBlob(buildJsonReport({ scores, transitionData, gainData, silenceData, bpmData, audioBuffer, filename, date, genre: genreLabels[genre] }), `${filename}-mix-grade.json`, 'application/json');
+
+  closeExportModal();
+}
+
+function downloadBlob(content, filename, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
+}
+
+// ── TXT Report ─────────────────────────────────────────────
+function buildTxtReport({ scores, transitionData, gainData, silenceData, bpmData, audioBuffer, filename, date, genre }) {
+  const hr  = '─'.repeat(56);
+  const hr2 = '═'.repeat(56);
+  const { letter } = gradeFromScore(scores.overall);
+  const lines = [];
+
+  lines.push('');
+  lines.push('  MIX GRADER  ·  FREQUENCY SUITE');
+  lines.push(`  ${hr2}`);
+  lines.push('');
+  lines.push(`  File     : ${filename}`);
+  lines.push(`  Date     : ${date}`);
+  lines.push(`  Duration : ${formatTime(audioBuffer.duration)}`);
+  lines.push(`  Genre    : ${genre}`);
+  lines.push(`  BPM      : ${bpmData.bpm} (confidence ${bpmData.confidence}%)`);
+  lines.push('');
+  lines.push(`  ${hr}`);
+  lines.push(`  OVERALL GRADE : ${letter}  (${scores.overall} / 100)`);
+  lines.push(`  ${hr}`);
+  lines.push('');
+  lines.push('  SUBSCORES');
+  lines.push(`  ${'─'.repeat(40)}`);
+
+  const w = scores.weights || {};
+  const subs = [
+    ['Transitions',     scores.transitionScore, w.transitions],
+    ['Energy arc',      scores.energyScore,     w.energy],
+    ['Gain / clip',     scores.gainScore,       w.gain],
+    ['BPM consistency', scores.bpmScore,        w.bpm],
+  ];
+  subs.forEach(([name, val, wt]) => {
+    const { letter: gl } = gradeFromScore(val);
+    const bar = '█'.repeat(Math.round(val / 5)) + '░'.repeat(20 - Math.round(val / 5));
+    const wPct = wt ? `(${Math.round(wt * 100)}%)` : '';
+    lines.push(`  ${name.padEnd(18)} ${bar}  ${String(val).padStart(3)} / 100  ${gl}  ${wPct}`);
+  });
+
+  lines.push('');
+  lines.push('  TRANSITIONS');
+  lines.push(`  ${'─'.repeat(40)}`);
+  if (transitionData.length === 0) {
+    lines.push('  No distinct transitions detected.');
+  } else {
+    lines.push(`  ${'#'.padEnd(4)}${'Time'.padEnd(10)}${'Type'.padEnd(12)}${'Blend'.padEnd(8)}${'BPM'.padEnd(14)}Grade`);
+    transitionData.forEach((tr, i) => {
+      const { letter: tl } = gradeFromScore(tr.grade);
+      const type = { blend:'Blend', cut:'Hard cut', quick:'Quick mix' }[tr.type] || tr.type;
+      const bpmStr = tr.bpmBefore > 0 ? `${tr.bpmBefore}→${tr.bpmAfter}` : '—';
+      lines.push(`  ${String(i+1).padEnd(4)}${formatTime(tr.time).padEnd(10)}${type.padEnd(12)}${(tr.blendDuration+'s').padEnd(8)}${bpmStr.padEnd(14)}${tl} (${tr.grade})`);
+    });
+  }
+
+  lines.push('');
+  lines.push('  GAIN & CLIPPING');
+  lines.push(`  ${'─'.repeat(40)}`);
+  lines.push(`  LUFS (approx)  : ${gainData.lufs} dBFS`);
+  lines.push(`  Clip events    : ${gainData.clipCount.toLocaleString()} samples (${(gainData.clipRatio * 100).toFixed(3)}%)`);
+  lines.push(`  Clip status    : ${gainData.clipRatio > 0.001 ? '⚠ Clipping detected' : '✓ Clean'}`);
+
+  if (silenceData.length > 0) {
+    lines.push('');
+    lines.push('  DEAD AIR / SILENCE');
+    lines.push(`  ${'─'.repeat(40)}`);
+    silenceData.forEach((s, i) => {
+      const sev = s.duration >= 5 ? 'Critical' : s.duration >= 3 ? 'Major' : 'Minor';
+      lines.push(`  ${String(i+1).padEnd(4)}${formatTime(s.start).padEnd(10)}→ ${formatTime(s.end).padEnd(10)}${s.duration.toFixed(1)}s  ${sev}`);
+    });
+  }
+
+  lines.push('');
+  lines.push(`  ${hr}`);
+  lines.push('  Generated by Mix Grader · Frequency Suite · v1.3.0');
+  lines.push(`  ${hr}`);
+  lines.push('');
+
+  return lines.join('\n');
+}
+
+// ── HTML Report ────────────────────────────────────────────
+function buildHtmlReport({ scores, transitionData, gainData, silenceData, bpmData, audioBuffer, filename, date, genre }) {
+  const { letter: overallLetter } = gradeFromScore(scores.overall);
+  const letterColor = scores.overall >= 80 ? '#2E7D52' : scores.overall >= 60 ? '#8A6500' : '#B03020';
+  const w = scores.weights || {};
+
+  const subRows = [
+    ['Transitions',     scores.transitionScore, w.transitions],
+    ['Energy arc',      scores.energyScore,     w.energy],
+    ['Gain / clip',     scores.gainScore,       w.gain],
+    ['BPM consistency', scores.bpmScore,        w.bpm],
+  ].map(([name, val, wt]) => {
+    const { letter: gl } = gradeFromScore(val);
+    const c = val >= 80 ? '#2E7D52' : val >= 60 ? '#8A6500' : '#B03020';
+    const barW = val;
+    const wPct = wt ? `${Math.round(wt * 100)}%` : '';
+    return `<tr>
+      <td>${name}</td>
+      <td style="width:180px"><div style="background:#e8e4dc;border-radius:2px;height:6px"><div style="background:${c};width:${barW}%;height:6px;border-radius:2px"></div></div></td>
+      <td style="text-align:right;font-family:monospace;font-weight:600;color:${c}">${val} / 100</td>
+      <td style="text-align:right;font-family:monospace;color:${c}">${gl}</td>
+      <td style="text-align:right;color:#888;font-size:11px">${wPct}</td>
+    </tr>`;
+  }).join('');
+
+  const trRows = transitionData.length === 0
+    ? '<tr><td colspan="6" style="color:#999;text-align:center;padding:16px">No distinct transitions detected</td></tr>'
+    : transitionData.map((tr, i) => {
+        const { letter: tl } = gradeFromScore(tr.grade);
+        const tc = tr.grade >= 80 ? '#2E7D52' : tr.grade >= 60 ? '#8A6500' : '#B03020';
+        const type = { blend:'Blend', cut:'Hard cut', quick:'Quick mix' }[tr.type] || tr.type;
+        const bpmStr = tr.bpmBefore > 0 ? `${tr.bpmBefore} → ${tr.bpmAfter}` : '—';
+        const driftColor = Math.abs(tr.bpmDrift) >= 4 ? '#B03020' : Math.abs(tr.bpmDrift) >= 2 ? '#8A6500' : '#2E7D52';
+        return `<tr>
+          <td style="color:#aaa">${i+1}</td>
+          <td style="font-family:monospace">${formatTime(tr.time)}</td>
+          <td><span style="font-family:monospace;font-size:11px;padding:2px 7px;border:1px solid #ddd;border-radius:2px">${type}</span></td>
+          <td style="color:#666">${tr.blendDuration}s</td>
+          <td style="font-family:monospace;color:${driftColor}">${bpmStr}</td>
+          <td><span style="font-family:monospace;font-weight:700;color:${tc}">${tl} · ${tr.grade}</span></td>
+        </tr>`;
+      }).join('');
+
+  const silenceSection = silenceData.length === 0 ? '' : `
+    <h2>Dead Air / Silence Events</h2>
+    <table>
+      <thead><tr><th>#</th><th>Start</th><th>End</th><th>Duration</th><th>Severity</th></tr></thead>
+      <tbody>
+        ${silenceData.map((s, i) => {
+          const sev = s.duration >= 5 ? ['Critical','#B03020','rgba(176,48,32,0.08)']
+                    : s.duration >= 3 ? ['Major',   '#8A6500','rgba(138,101,0,0.08)']
+                    :                   ['Minor',   '#8A6500','rgba(232,200,76,0.12)'];
+          return `<tr>
+            <td style="color:#aaa">${i+1}</td>
+            <td style="font-family:monospace">${formatTime(s.start)}</td>
+            <td style="font-family:monospace">${formatTime(s.end)}</td>
+            <td style="font-family:monospace">${s.duration.toFixed(1)}s</td>
+            <td><span style="font-family:monospace;font-size:11px;padding:2px 8px;border-radius:2px;color:${sev[1]};background:${sev[2]}">${sev[0]}</span></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mix Grade Report — ${filename}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap');
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:#F7F4EF; color:#1A1814; font-family:'DM Sans',sans-serif; font-size:14px; padding:48px 32px; }
+  .page { max-width:820px; margin:0 auto; }
+  .report-header { border-bottom:2px solid #C9A84C; padding-bottom:20px; margin-bottom:32px; display:flex; justify-content:space-between; align-items:flex-end; }
+  .report-title { font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.2em; color:#C9A84C; text-transform:uppercase; margin-bottom:6px; }
+  .report-filename { font-size:22px; font-weight:500; color:#1A1814; }
+  .report-meta { font-size:12px; color:#888; margin-top:4px; }
+  .overall-block { display:flex; align-items:center; gap:24px; background:#fff; border:1px solid #e0dbd0; border-radius:4px; padding:20px 24px; margin-bottom:24px; }
+  .overall-letter { font-family:'Space Mono',monospace; font-size:64px; font-weight:700; line-height:1; color:${letterColor}; }
+  .overall-right { flex:1; }
+  .overall-score { font-family:'Space Mono',monospace; font-size:28px; color:${letterColor}; }
+  .overall-label { font-size:12px; color:#888; margin-top:2px; }
+  .overall-meta { font-size:12px; color:#666; margin-top:8px; line-height:1.7; }
+  h2 { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:0.2em; color:#C9A84C; text-transform:uppercase; margin:28px 0 12px; padding-bottom:6px; border-bottom:1px solid #e0dbd0; }
+  table { width:100%; border-collapse:collapse; margin-bottom:8px; }
+  th { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:0.12em; color:#999; text-transform:uppercase; text-align:left; padding:8px 10px; border-bottom:1px solid #e8e4dc; }
+  td { padding:9px 10px; border-bottom:1px solid #f0ece4; font-size:13px; vertical-align:middle; }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:#faf8f4; }
+  .footer { margin-top:40px; padding-top:16px; border-top:1px solid #e0dbd0; font-family:'Space Mono',monospace; font-size:9px; color:#bbb; letter-spacing:0.1em; text-align:center; }
+  @media print { body { background:#fff; padding:24px; } .overall-block { break-inside:avoid; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="report-header">
+    <div>
+      <div class="report-title">Mix Grader · Frequency Suite</div>
+      <div class="report-filename">${filename}</div>
+      <div class="report-meta">${date} · ${genre} · ${formatTime(audioBuffer.duration)} · ${bpmData.bpm} BPM</div>
+    </div>
+    <div style="text-align:right;font-family:'Space Mono',monospace;font-size:10px;color:#aaa">v1.3.0</div>
+  </div>
+
+  <div class="overall-block">
+    <div class="overall-letter">${overallLetter}</div>
+    <div class="overall-right">
+      <div class="overall-score">${scores.overall} / 100</div>
+      <div class="overall-label">Overall grade</div>
+      <div class="overall-meta">
+        BPM: <strong>${bpmData.bpm}</strong> (${bpmData.confidence}% confidence) &nbsp;·&nbsp;
+        LUFS: <strong>${gainData.lufs}</strong> dBFS &nbsp;·&nbsp;
+        Clipping: <strong>${gainData.clipRatio > 0.001 ? '⚠ Detected' : '✓ Clean'}</strong> &nbsp;·&nbsp;
+        Dead air: <strong>${silenceData.length === 0 ? '✓ None' : silenceData.length + ' event(s)'}</strong>
+      </div>
+    </div>
+  </div>
+
+  <h2>Subscores</h2>
+  <table>
+    <thead><tr><th>Category</th><th>Score</th><th></th><th>Grade</th><th>Weight</th></tr></thead>
+    <tbody>${subRows}</tbody>
+  </table>
+
+  <h2>Transition Breakdown</h2>
+  <table>
+    <thead><tr><th>#</th><th>Timestamp</th><th>Type</th><th>Blend dur.</th><th>BPM before → after</th><th>Grade</th></tr></thead>
+    <tbody>${trRows}</tbody>
+  </table>
+
+  ${silenceSection}
+
+  <div class="footer">GENERATED BY MIX GRADER · FREQUENCY SUITE · ${date}</div>
+</div>
+</body>
+</html>`;
+}
+
+// ── JSON Report ────────────────────────────────────────────
+function buildJsonReport({ scores, transitionData, gainData, silenceData, bpmData, audioBuffer, filename, date, genre }) {
+  return JSON.stringify({
+    meta: {
+      generator: 'Mix Grader · Frequency Suite v1.3.0',
+      date,
+      filename,
+      genre,
+      duration: Math.round(audioBuffer.duration),
+      sampleRate: audioBuffer.sampleRate,
+      channels: audioBuffer.numberOfChannels
+    },
+    scores: {
+      overall: scores.overall,
+      grade: gradeFromScore(scores.overall).letter,
+      transitions: scores.transitionScore,
+      energyArc: scores.energyScore,
+      gainClip: scores.gainScore,
+      bpmConsistency: scores.bpmScore,
+      weights: scores.weights
+    },
+    bpm: { detected: bpmData.bpm, confidence: bpmData.confidence },
+    gain: { lufs: gainData.lufs, clipCount: gainData.clipCount, clipRatio: +gainData.clipRatio.toFixed(6) },
+    transitions: transitionData.map(tr => ({
+      time: +tr.time.toFixed(2),
+      timeFormatted: formatTime(tr.time),
+      type: tr.type,
+      blendDuration: tr.blendDuration,
+      bpmBefore: tr.bpmBefore,
+      bpmAfter: tr.bpmAfter,
+      bpmDrift: tr.bpmDrift,
+      grade: tr.grade,
+      gradeLetter: gradeFromScore(tr.grade).letter
+    })),
+    silenceEvents: silenceData.map(s => ({
+      start: +s.start.toFixed(2),
+      end: +s.end.toFixed(2),
+      duration: +s.duration.toFixed(2),
+      startFormatted: formatTime(s.start),
+      severity: s.duration >= 5 ? 'critical' : s.duration >= 3 ? 'major' : 'minor'
+    }))
+  }, null, 2);
+}
+</script>
+</body>
+</html>

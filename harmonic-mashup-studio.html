@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Harmonic Mashup Studio — v1</title>
+<style>
+:root{
+  --bg:#030307;--panel:#07070f;--p2:#0b0b18;
+  --gold:#e0a812;--gb:#ffd04e;--gdim:#5a4208;
+  --cyan:#18e4ff;--cdim:#002f3d;
+  --green:#1ed080;--red:#f03838;
+  --text:#f0ece4;--mid:#c8c2b8;--dim:#9a958e;--fnt:#5a5650;
+  --bdr:#14141f;--bhi:#22223a;
+  --r:4px;--rl:9px;--mono:'Courier New','Consolas',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);min-height:100vh;
+  background-image:radial-gradient(ellipse 55% 38% at 12% 8%,rgba(224,168,18,.055) 0%,transparent 65%),
+  radial-gradient(ellipse 45% 36% at 88% 92%,rgba(24,228,255,.04) 0%,transparent 65%);}
+.hdr{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:12px 20px;border-bottom:1px solid var(--bdr);
+  background:linear-gradient(to right,rgba(224,168,18,.07),transparent 40%,rgba(24,228,255,.04));position:sticky;top:0;z-index:100;}
+.logo-name{font-size:18px;font-weight:700;letter-spacing:4px;color:var(--gb);}
+.logo-sub{font-size:9px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-top:2px;}
+.tag{font-size:9px;padding:3px 8px;border:1px solid var(--bhi);border-radius:10px;color:var(--fnt);}
+.home-link{font-size:10px;letter-spacing:1.5px;padding:7px 11px;border:1px solid var(--bhi);border-radius:var(--r);color:var(--mid);text-decoration:none;background:var(--p2);}
+.home-link:hover{border-color:var(--gdim);color:var(--gb);}
+.btn:focus-visible,.home-link:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--gb);outline-offset:2px;}
+.main{padding:16px 20px 40px;max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:14px;}
+.row-master{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:12px 14px;background:var(--panel);border:1px solid var(--bhi);border-radius:var(--rl);}
+.btn{font-family:var(--mono);font-size:11px;letter-spacing:1.5px;padding:8px 16px;border:1px solid var(--bhi);border-radius:var(--r);background:var(--p2);color:var(--text);cursor:pointer;outline:none;}
+.btn:hover{border-color:var(--gdim);color:var(--gb);}
+.btn-primary{border-color:var(--gdim);background:rgba(224,168,18,.1);color:var(--gb);}
+.btn:disabled{opacity:.35;cursor:not-allowed;}
+.time-read{font-size:13px;color:var(--cyan);min-width:120px;}
+.harmony-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;padding:12px 14px;background:var(--panel);border:1px solid var(--bdr);border-radius:var(--rl);}
+.harmony-bar h3{font-size:9px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-bottom:8px;}
+.hrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;}
+.hrow label{font-size:10px;color:var(--fnt);}
+select,input[type=number]{font-family:var(--mono);font-size:11px;background:var(--p2);border:1px solid var(--bhi);border-radius:var(--r);color:var(--text);padding:5px 8px;}
+.camelot{font-size:12px;color:var(--gold);padding:4px 10px;border:1px solid var(--gdim);border-radius:var(--r);background:rgba(224,168,18,.06);}
+.hint{font-size:9px;color:var(--dim);line-height:1.4;margin-top:6px;}
+.cross-row{display:flex;align-items:center;gap:14px;padding:10px 14px;background:var(--p2);border:1px solid var(--bdr);border-radius:var(--rl);flex-wrap:wrap;}
+.cross-row span{font-size:10px;letter-spacing:2px;color:var(--dim);}
+input[type=range]{width:min(420px,60vw);accent-color:var(--gold);}
+.decks{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:900px){.decks{grid-template-columns:1fr;}.hdr{align-items:flex-start}.hdr > div:first-child{width:100%;}.main{padding:14px 12px 34px}.row-master,.cross-row{align-items:flex-start}.time-read{min-width:0}.export-grid{align-items:stretch}.export-grid .btn{width:100%;justify-content:center}input[type=range]{width:100%;}}
+.deck{background:var(--panel);border:1px solid var(--bdr);border-radius:var(--rl);padding:12px;display:flex;flex-direction:column;gap:10px;}
+.deck-a{border-color:rgba(90,66,8,.5);}
+.deck-b{border-color:rgba(0,47,61,.6);}
+.dh{display:flex;align-items:center;gap:8px;}
+.badge{font-size:10px;letter-spacing:2px;font-weight:700;padding:3px 9px;border-radius:20px;}
+.ba{background:var(--gdim);color:var(--gb);border:1px solid var(--gold);}
+.bb{background:var(--cdim);color:var(--cyan);border:1px solid var(--cyan);}
+.dz{border:1px dashed var(--bhi);border-radius:var(--r);padding:14px;text-align:center;cursor:pointer;background:var(--p2);position:relative;}
+.dz:hover{border-color:var(--gold);}
+.dz input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.dz-txt{font-size:10px;color:var(--dim);}
+.wv{height:72px;border-radius:var(--r);overflow:hidden;background:#050508;display:none;}
+.wv.vis{display:block;}
+.ctrl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;}
+.ctrl-grid label{display:flex;flex-direction:column;gap:3px;font-size:9px;letter-spacing:1px;color:var(--dim);}
+.export-box{padding:12px 14px;background:var(--panel);border:1px solid var(--bhi);border-radius:var(--rl);}
+.export-box h3{font-size:9px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-bottom:8px;}
+.export-grid{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div>
+    <div class="logo-name">HARMONIC MASHUP STUDIO</div>
+    <div class="logo-sub">Two-track · in-browser · offline · WAV export</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+    <a class="home-link" href="producers-crate-index.html">← Crate Home</a>
+    <span class="tag">v1 · single file</span>
+  </div>
+</header>
+
+<div class="main">
+  <div class="row-master">
+    <button type="button" class="btn btn-primary" id="btnPlay">Play</button>
+    <button type="button" class="btn" id="btnStop">Stop</button>
+    <span class="time-read" id="timeRead">0:00 / 0:00</span>
+    <label style="display:flex;align-items:center;gap:8px;font-size:10px;color:var(--dim);">
+      Master <input type="range" id="masterGain" min="0" max="100" value="85" style="width:120px;accent-color:var(--gold);">
+    </label>
+  </div>
+
+  <div class="harmony-bar">
+    <div>
+      <h3>Harmony</h3>
+      <div class="hrow">
+        <button type="button" class="btn" id="btnMatchBtoA">Match track B pitch → A</button>
+        <button type="button" class="btn" id="btnMatchAtoB">Match track A pitch → B</button>
+      </div>
+      <p class="hint" id="compatHint">Load both tracks and set keys to see Camelot compatibility.</p>
+    </div>
+    <div>
+      <h3>Pitch note</h3>
+      <p class="hint">Web Audio uses pitch via playback rate (semitones). Duration shifts slightly when you change pitch—trim in a DAW if needed. Export uses the same math as playback.</p>
+    </div>
+  </div>
+
+  <div class="cross-row">
+    <span>A</span>
+    <input type="range" id="xfader" min="0" max="100" value="50" title="Crossfader (constant power)">
+    <span>B</span>
+    <span id="xfRead" style="font-size:10px;color:var(--fnt);">Center</span>
+  </div>
+
+  <div class="decks">
+    <section class="deck deck-a" id="deckA">
+      <div class="dh"><span class="badge ba">A</span><span class="dz-txt" id="nameA">No file</span></div>
+      <div class="dz" id="dzA"><input type="file" id="fileA" accept="audio/*"><div class="dz-txt">Drop audio or click — full song, acapella, instrumental, or stem</div></div>
+      <label style="font-size:10px;color:var(--dim);">Material
+        <select id="matA">
+          <option value="full">Full song</option>
+          <option value="acapella">Acapella</option>
+          <option value="instrumental">Instrumental</option>
+          <option value="stem">Stem (single file)</option>
+        </select>
+      </label>
+      <canvas class="wv" id="wvA" width="800" height="72"></canvas>
+      <div class="ctrl-grid">
+        <label>Key (root) <select id="keyRootA"></select></label>
+        <label>Mode <select id="keyModeA"><option value="major">Major</option><option value="minor">Minor</option></select></label>
+        <label>Camelot <span class="camelot" id="camelotA">—</span></label>
+        <label>Pitch ± semitones <input type="number" id="pitchA" min="-12" max="12" value="0" step="1"></label>
+        <label>BPM <input type="number" id="bpmA" min="20" max="300" value="120" step="0.1"></label>
+        <label><button type="button" class="btn" id="tapA" style="width:100%;">Tap tempo</button></label>
+        <label>Time offset (s) <input type="number" id="offA" value="0" step="0.01" title="Positive: B starts later. Negative: A starts later."></label>
+        <label>Gain <input type="range" id="gainA" min="0" max="100" value="100"></label>
+      </div>
+    </section>
+
+    <section class="deck deck-b" id="deckB">
+      <div class="dh"><span class="badge bb">B</span><span class="dz-txt" id="nameB">No file</span></div>
+      <div class="dz" id="dzB"><input type="file" id="fileB" accept="audio/*"><div class="dz-txt">Drop audio or click</div></div>
+      <label style="font-size:10px;color:var(--dim);">Material
+        <select id="matB">
+          <option value="full">Full song</option>
+          <option value="acapella">Acapella</option>
+          <option value="instrumental">Instrumental</option>
+          <option value="stem">Stem (single file)</option>
+        </select>
+      </label>
+      <canvas class="wv" id="wvB" width="800" height="72"></canvas>
+      <div class="ctrl-grid">
+        <label>Key (root) <select id="keyRootB"></select></label>
+        <label>Mode <select id="keyModeB"><option value="major">Major</option><option value="minor">Minor</option></select></label>
+        <label>Camelot <span class="camelot" id="camelotB">—</span></label>
+        <label>Pitch ± semitones <input type="number" id="pitchB" min="-12" max="12" value="0" step="1"></label>
+        <label>BPM <input type="number" id="bpmB" min="20" max="300" value="120" step="0.1"></label>
+        <label><button type="button" class="btn" id="tapB" style="width:100%;">Tap tempo</button></label>
+        <label>Gain <input type="range" id="gainB" min="0" max="100" value="100"></label>
+      </div>
+    </section>
+  </div>
+
+  <div class="export-box">
+    <h3>Export mixdown (WAV)</h3>
+    <p class="hint" style="margin-bottom:8px;">Renders the current pitch, gains, crossfader, and offsets. Longer tracks dominate total length.</p>
+    <div class="export-grid">
+      <button type="button" class="btn btn-primary" id="btnExport">Export WAV</button>
+      <span id="exportStatus" style="font-size:10px;color:var(--dim);"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+
+  var MAJOR_CAMELOT = { 'C':'8B','C#':'3B','D':'10B','D#':'5B','E':'12B','F':'7B','F#':'2B','G':'9B','G#':'4B','A':'11B','A#':'6B','B':'1B' };
+  var MINOR_CAMELOT = { 'C':'5A','C#':'12A','D':'7A','D#':'2A','E':'9A','F':'4A','F#':'11A','G':'6A','G#':'1A','A':'8A','A#':'3A','B':'10A' };
+
+  function camelotFor(root, mode) {
+    var m = mode === 'minor' ? MINOR_CAMELOT : MAJOR_CAMELOT;
+    return m[root] || '—';
+  }
+
+  function semitoneIndex(root) {
+    return NOTES.indexOf(root);
+  }
+
+  /** Smallest signed semitone steps from key A to key B (same mode), for rough harmonic alignment */
+  function semitoneDiffRoot(rootA, modeA, rootB, modeB) {
+    var ia = semitoneIndex(rootA);
+    var ib = semitoneIndex(rootB);
+    if (ia < 0 || ib < 0) return 0;
+    var diff = ib - ia;
+    while (diff > 6) diff -= 12;
+    while (diff < -6) diff += 12;
+    if (modeA !== modeB) return null;
+    return diff;
+  }
+
+  function compatibilityHint(c1, c2) {
+    if (!c1 || !c2 || c1 === '—' || c2 === '—') return 'Set both keys for Camelot hints.';
+    var n1 = parseInt(c1, 10);
+    var n2 = parseInt(c2, 10);
+    var l1 = c1.slice(-1);
+    var l2 = c2.slice(-1);
+    if (l1 !== l2) return 'Major/minor differ — try relative/parallel moves or pitch shift.';
+    var d = Math.abs(n1 - n2);
+    d = Math.min(d, 12 - d);
+    if (d === 0) return 'Same Camelot code — strong harmonic match.';
+    if (d === 1) return '±1 on wheel — common DJ harmonic mix.';
+    if (d === 2) return '±2 — workable with balance; ears decide.';
+    return 'Larger jump — use pitch shift or pick another pairing.';
+  }
+
+  function fillKeySelect(sel) {
+    NOTES.forEach(function (n) {
+      var o = document.createElement('option');
+      o.value = n;
+      o.textContent = n;
+      sel.appendChild(o);
+    });
+    sel.value = 'A';
+  }
+
+  var keyRootA = document.getElementById('keyRootA');
+  var keyRootB = document.getElementById('keyRootB');
+  var keyModeA = document.getElementById('keyModeA');
+  var keyModeB = document.getElementById('keyModeB');
+  fillKeySelect(keyRootA);
+  fillKeySelect(keyRootB);
+  keyRootA.value = 'A';
+  keyRootB.value = 'D';
+
+  function refreshCamelot() {
+    document.getElementById('camelotA').textContent = camelotFor(keyRootA.value, keyModeA.value);
+    document.getElementById('camelotB').textContent = camelotFor(keyRootB.value, keyModeB.value);
+    var h = compatibilityHint(
+      document.getElementById('camelotA').textContent,
+      document.getElementById('camelotB').textContent
+    );
+    document.getElementById('compatHint').textContent = h;
+  }
+  ['change', 'input'].forEach(function (ev) {
+    keyRootA.addEventListener(ev, refreshCamelot);
+    keyRootB.addEventListener(ev, refreshCamelot);
+    keyModeA.addEventListener(ev, refreshCamelot);
+    keyModeB.addEventListener(ev, refreshCamelot);
+  });
+  refreshCamelot();
+
+  var audioCtx = null;
+  var bufferA = null;
+  var bufferB = null;
+  var sources = { a: null, b: null };
+  var startedAt = 0;
+  var playing = false;
+  var pauseElapsed = 0;
+
+  function getCtx() {
+    if (!audioCtx) {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AC();
+    }
+    return audioCtx;
+  }
+
+  function effRate(semitones) {
+    return Math.pow(2, semitones / 12);
+  }
+
+  function durationAfterPitch(buffer, semitones) {
+    if (!buffer) return 0;
+    return buffer.duration / effRate(semitones);
+  }
+
+  function stopPlayback() {
+    var ctx = audioCtx;
+    if (!ctx) return;
+    try {
+      if (sources.a) { sources.a.stop(); sources.a.disconnect(); sources.a = null; }
+      if (sources.b) { sources.b.stop(); sources.b.disconnect(); sources.b = null; }
+    } catch (e) {}
+    playing = false;
+  }
+
+  function constantPowerGains(x) {
+    var t = (x / 100) * Math.PI * 0.5;
+    return { ga: Math.cos(t), gb: Math.sin(t) };
+  }
+
+  function buildGraph() {
+    var ctx = getCtx();
+    stopPlayback();
+    if (!bufferA && !bufferB) return;
+
+    var pitchA = parseInt(document.getElementById('pitchA').value, 10) || 0;
+    var pitchB = parseInt(document.getElementById('pitchB').value, 10) || 0;
+    var gA = parseInt(document.getElementById('gainA').value, 10) / 100;
+    var gB = parseInt(document.getElementById('gainB').value, 10) / 100;
+    var master = parseInt(document.getElementById('masterGain').value, 10) / 100;
+    var xf = parseInt(document.getElementById('xfader').value, 10);
+    var cp = constantPowerGains(xf);
+
+    var offRaw = parseFloat(document.getElementById('offA').value);
+    if (isNaN(offRaw)) offRaw = 0;
+    var offsetA = offRaw;
+    var aStart = Math.max(0, -offsetA);
+    var bStart = Math.max(0, offsetA);
+
+    var gainMain = ctx.createGain();
+    gainMain.gain.value = master;
+
+    var gainNodeA = ctx.createGain();
+    var gainNodeB = ctx.createGain();
+    gainNodeA.gain.value = gA * cp.ga;
+    gainNodeB.gain.value = gB * cp.gb;
+
+    gainNodeA.connect(gainMain);
+    gainNodeB.connect(gainMain);
+    gainMain.connect(ctx.destination);
+
+    var t0 = ctx.currentTime + 0.05;
+    startedAt = t0;
+
+    if (bufferA) {
+      var srcA = ctx.createBufferSource();
+      srcA.buffer = bufferA;
+      srcA.playbackRate.value = effRate(pitchA);
+      srcA.connect(gainNodeA);
+      srcA.start(t0 + aStart, 0);
+      sources.a = srcA;
+    }
+    if (bufferB) {
+      var srcB = ctx.createBufferSource();
+      srcB.buffer = bufferB;
+      srcB.playbackRate.value = effRate(pitchB);
+      srcB.connect(gainNodeB);
+      srcB.start(t0 + bStart, 0);
+      sources.b = srcB;
+    }
+    playing = true;
+    pauseElapsed = 0;
+    requestAnimationFrame(updateTimeDisplay);
+  }
+
+  function totalDurationTimeline() {
+    var pA = parseInt(document.getElementById('pitchA').value, 10) || 0;
+    var pB = parseInt(document.getElementById('pitchB').value, 10) || 0;
+    var offRaw = parseFloat(document.getElementById('offA').value);
+    if (isNaN(offRaw)) offRaw = 0;
+    var aStart = Math.max(0, -offRaw);
+    var bStart = Math.max(0, offRaw);
+    var dA = bufferA ? aStart + durationAfterPitch(bufferA, pA) : 0;
+    var dB = bufferB ? bStart + durationAfterPitch(bufferB, pB) : 0;
+    return Math.max(dA, dB, 0.001);
+  }
+
+  function updateTimeDisplay() {
+    if (!playing || !audioCtx) return;
+    var ctx = audioCtx;
+    var elapsed = ctx.currentTime - startedAt;
+    var total = totalDurationTimeline();
+    if (elapsed >= total) {
+      stopPlayback();
+      document.getElementById('timeRead').textContent = formatTime(total) + ' / ' + formatTime(total);
+      return;
+    }
+    document.getElementById('timeRead').textContent = formatTime(Math.max(0, elapsed)) + ' / ' + formatTime(total);
+    requestAnimationFrame(updateTimeDisplay);
+  }
+
+  function formatTime(s) {
+    var m = Math.floor(s / 60);
+    var sec = Math.floor(s % 60);
+    return m + ':' + (sec < 10 ? '0' : '') + sec;
+  }
+
+  document.getElementById('btnPlay').addEventListener('click', function () {
+    getCtx();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    buildGraph();
+  });
+
+  document.getElementById('btnStop').addEventListener('click', function () {
+    stopPlayback();
+    document.getElementById('timeRead').textContent = '0:00 / ' + formatTime(totalDurationTimeline());
+  });
+
+  document.getElementById('xfader').addEventListener('input', function () {
+    var v = parseInt(document.getElementById('xfader').value, 10);
+    var label = v < 25 ? 'Toward A' : v > 75 ? 'Toward B' : 'Center';
+    document.getElementById('xfRead').textContent = label + ' (' + v + '%)';
+  });
+  document.getElementById('xfader').dispatchEvent(new Event('input'));
+
+  function loadFile(which, file) {
+    if (!file) return;
+    var ctx = getCtx();
+    var r = new FileReader();
+    r.onload = function () {
+      ctx.decodeAudioData(r.result.slice(0), function (buf) {
+        if (which === 'a') {
+          bufferA = buf;
+          document.getElementById('nameA').textContent = file.name;
+          drawWave(buf, document.getElementById('wvA'));
+          document.getElementById('wvA').classList.add('vis');
+        } else {
+          bufferB = buf;
+          document.getElementById('nameB').textContent = file.name;
+          drawWave(buf, document.getElementById('wvB'));
+          document.getElementById('wvB').classList.add('vis');
+        }
+        document.getElementById('timeRead').textContent = '0:00 / ' + formatTime(totalDurationTimeline());
+      }, function () {
+        alert('Could not decode audio. Try WAV or MP3.');
+      });
+    };
+    r.readAsArrayBuffer(file);
+  }
+
+  document.getElementById('fileA').addEventListener('change', function (e) {
+    loadFile('a', e.target.files[0]);
+  });
+  document.getElementById('fileB').addEventListener('change', function (e) {
+    loadFile('b', e.target.files[0]);
+  });
+
+  function drawWave(buffer, canvas) {
+    var w = canvas.width;
+    var h = canvas.height;
+    var ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#08080c';
+    ctx.fillRect(0, 0, w, h);
+    var data = buffer.getChannelData(0);
+    var step = Math.ceil(data.length / w);
+    var amp = h / 2;
+    ctx.beginPath();
+    ctx.strokeStyle = canvas.id === 'wvB' ? 'rgba(24,228,255,0.85)' : 'rgba(224,168,18,0.85)';
+    ctx.lineWidth = 1;
+    for (var i = 0; i < w; i++) {
+      var min = 1.0;
+      var max = -1.0;
+      var start = i * step;
+      var end = Math.min(start + step, data.length);
+      for (var j = start; j < end; j++) {
+        var v = data[j];
+        if (v < min) min = v;
+        if (v > max) max = v;
+      }
+      ctx.moveTo(i, (1 + min) * amp);
+      ctx.lineTo(i, (1 + max) * amp);
+    }
+    ctx.stroke();
+  }
+
+  function tapHandler(bpmInputId) {
+    var taps = [];
+    return function () {
+      var now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+      taps.push(now);
+      if (taps.length > 8) taps.shift();
+      if (taps.length < 2) return;
+      var intervals = [];
+      for (var i = 1; i < taps.length; i++) intervals.push(taps[i] - taps[i - 1]);
+      var avg = intervals.reduce(function (a, b) { return a + b; }, 0) / intervals.length;
+      if (avg > 0) {
+        var bpm = 60000 / avg;
+        document.getElementById(bpmInputId).value = (Math.round(bpm * 10) / 10).toString();
+      }
+    };
+  }
+  document.getElementById('tapA').addEventListener('click', tapHandler('bpmA'));
+  document.getElementById('tapB').addEventListener('click', tapHandler('bpmB'));
+
+  document.getElementById('btnMatchBtoA').addEventListener('click', function () {
+    var d = semitoneDiffRoot(keyRootB.value, keyModeB.value, keyRootA.value, keyModeA.value);
+    if (d === null) {
+      alert('Matching works best when both tracks use the same mode (both major or both minor).');
+      return;
+    }
+    var cur = parseInt(document.getElementById('pitchB').value, 10) || 0;
+    document.getElementById('pitchB').value = String(cur + d);
+  });
+
+  document.getElementById('btnMatchAtoB').addEventListener('click', function () {
+    var d = semitoneDiffRoot(keyRootA.value, keyModeA.value, keyRootB.value, keyModeB.value);
+    if (d === null) {
+      alert('Matching works best when both tracks use the same mode (both major or both minor).');
+      return;
+    }
+    var cur = parseInt(document.getElementById('pitchA').value, 10) || 0;
+    document.getElementById('pitchA').value = String(cur + d);
+  });
+
+  function writeWavStereo(float32Left, float32Right, sampleRate) {
+    var n = float32Left.length;
+    var ab = new ArrayBuffer(44 + n * 4);
+    var v = new DataView(ab);
+    var o = 0;
+    function w32(d) { v.setUint32(o, d, true); o += 4; }
+    function w16(d) { v.setUint16(o, d, true); o += 2; }
+    function writeStr(s) {
+      for (var i = 0; i < s.length; i++) v.setUint8(o++, s.charCodeAt(i));
+    }
+    writeStr('RIFF');
+    w32(36 + n * 4);
+    writeStr('WAVE');
+    writeStr('fmt ');
+    w32(16);
+    w16(1);
+    w16(2);
+    w32(sampleRate);
+    w32(sampleRate * 4);
+    w16(4);
+    w16(16);
+    writeStr('data');
+    w32(n * 4);
+    for (var i = 0; i < n; i++) {
+      var l = Math.max(-1, Math.min(1, float32Left[i]));
+      var r = Math.max(-1, Math.min(1, float32Right[i]));
+      w16(l < 0 ? l * 0x8000 : l * 0x7fff);
+      w16(r < 0 ? r * 0x8000 : r * 0x7fff);
+    }
+    return ab;
+  }
+
+  /** Resample buffer at new playback rate (pitch) by linear interpolation; returns new AudioBuffer */
+  function resampleBuffer(ctx, buffer, semitones) {
+    var rate = effRate(semitones);
+    var nCh = buffer.numberOfChannels;
+    var srcRate = buffer.sampleRate;
+    var srcFrames = buffer.length;
+    var dstFrames = Math.ceil(srcFrames / rate);
+    var out = ctx.createBuffer(nCh, dstFrames, srcRate);
+    for (var c = 0; c < nCh; c++) {
+      var src = buffer.getChannelData(c);
+      var dst = out.getChannelData(c);
+      for (var i = 0; i < dstFrames; i++) {
+        var pos = i * rate;
+        var i0 = Math.floor(pos);
+        var frac = pos - i0;
+        var s0 = i0 < srcFrames ? src[i0] : 0;
+        var s1 = i0 + 1 < srcFrames ? src[i0 + 1] : 0;
+        dst[i] = s0 + frac * (s1 - s0);
+      }
+    }
+    return out;
+  }
+
+  document.getElementById('btnExport').addEventListener('click', function () {
+    if (!bufferA && !bufferB) {
+      alert('Load at least one track.');
+      return;
+    }
+    var status = document.getElementById('exportStatus');
+    status.textContent = 'Rendering…';
+    var pitchA = parseInt(document.getElementById('pitchA').value, 10) || 0;
+    var pitchB = parseInt(document.getElementById('pitchB').value, 10) || 0;
+    var gA = parseInt(document.getElementById('gainA').value, 10) / 100;
+    var gB = parseInt(document.getElementById('gainB').value, 10) / 100;
+    var master = parseInt(document.getElementById('masterGain').value, 10) / 100;
+    var xf = parseInt(document.getElementById('xfader').value, 10);
+    var cp = constantPowerGains(xf);
+    var offRaw = parseFloat(document.getElementById('offA').value);
+    if (isNaN(offRaw)) offRaw = 0;
+    var aStart = Math.max(0, -offRaw);
+    var bStart = Math.max(0, offRaw);
+
+    var ctx = getCtx();
+    var sr = ctx.sampleRate;
+
+    var bufA = bufferA ? resampleBuffer(ctx, bufferA, pitchA) : null;
+    var bufB = bufferB ? resampleBuffer(ctx, bufferB, pitchB) : null;
+
+    var lenA = bufA ? bufA.length : 0;
+    var lenB = bufB ? bufB.length : 0;
+    var startA = Math.floor(aStart * sr);
+    var startB = Math.floor(bStart * sr);
+    var endA = startA + lenA;
+    var endB = startB + lenB;
+    var totalFrames = Math.max(endA, endB, 1);
+
+    var offline = new OfflineAudioContext(2, totalFrames, sr);
+    var gainA = offline.createGain();
+    var gainB = offline.createGain();
+    var masterG = offline.createGain();
+    gainA.gain.value = gA * cp.ga * master;
+    gainB.gain.value = gB * cp.gb * master;
+    masterG.gain.value = 1;
+    gainA.connect(masterG);
+    gainB.connect(masterG);
+    masterG.connect(offline.destination);
+
+    if (bufA) {
+      var sA = offline.createBufferSource();
+      sA.buffer = bufA;
+      sA.connect(gainA);
+      sA.start(aStart, 0);
+    }
+    if (bufB) {
+      var sB = offline.createBufferSource();
+      sB.buffer = bufB;
+      sB.connect(gainB);
+      sB.start(bStart, 0);
+    }
+
+    offline.startRendering().then(function (rendered) {
+      var ch0 = rendered.getChannelData(0);
+      var ch1 = rendered.getChannelData(1);
+      var ab = writeWavStereo(ch0, ch1, rendered.sampleRate);
+      var blob = new Blob([ab], { type: 'audio/wav' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'harmonic-mashup-mixdown.wav';
+      a.click();
+      URL.revokeObjectURL(url);
+      status.textContent = 'Done — harmonic-mashup-mixdown.wav';
+    }).catch(function () {
+      status.textContent = 'Export failed.';
+    });
+  });
+})();
+</script>
+</body>
+</html>
